@@ -271,6 +271,9 @@ nav button svg{width:22px; height:22px}
 .mname{font-size:12.5px; font-weight:600; color:var(--muted); text-align:right}
 .mtrack{position:relative; height:14px; border-radius:4px; background:var(--card2)}
 .mband{position:absolute; top:0; bottom:0; background:var(--accent-soft)}
+.mmrv{position:absolute; top:0; bottom:0; background:var(--accent-fill); opacity:.5}
+.mmav{position:absolute; top:-2px; bottom:-2px; width:2px; margin-left:-1px; background:var(--ink); opacity:.55; border-radius:1px}
+.msub{grid-column:2; margin:-3px 0 2px; font-size:11.5px; color:var(--muted)}
 .mplan{position:absolute; left:0; top:0; bottom:0; border-radius:0 4px 4px 0; border:1.5px solid var(--accent-fill); border-left:none}
 .mplan.solid{background:var(--accent-fill)}
 .mdone{position:absolute; left:0; top:3px; bottom:3px; border-radius:0 3px 3px 0; background:var(--accent)}
@@ -2137,13 +2140,24 @@ function programmeCardsHTML(){
   ${presetsHTML()}
   <div class="sect disp">Plan</div>`;
 }
+/* Lee's own volume landmarks (from Workouts.xlsx): [MAV, MRV low, MRV high] sets per week. Back and Delts are his groups, so they add up the app's finer muscles. */
+const LM={Chest:[14,16,18], Back:[18,20,22], Triceps:[12,14,16], Biceps:[14,16,18], Delts:[12,14,16], Quads:[16,18,20], Glutes:[14,16,18], Hams:[12,14,16]};
+const LMG={"Lats":"Back","Upper Back":"Back","Front Delt":"Delts","Side Delt":"Delts","Rear Delt":"Delts"};
+const lmGroup=m=>LMG[m]||m;
+const LMKEYS=[...new Set(MUSCLES.map(lmGroup))];
+function lmTotals(o){ const r={}; for(const k of Object.keys(o)){ const g=k==="Other"?"Other":lmGroup(k); const e=r[g]||(r[g]={n:0,p:{}}); e.n+=o[k]; e.p[k]=o[k]; } return r; }
+function lmClass(g,c){ if(c<=0) return ""; const L=LM[g]; if(!L) return "h1"; return c<L[0]?"h2":(c<=L[2]?"h3":"h4"); }
 function muscleBars(planned,done,showDone){
-  const keys=[...MUSCLES,"Other"].filter(k=>planned[k]||done[k]);
+  const P=lmTotals(planned), D=lmTotals(done);
+  const keys=[...LMKEYS,"Other"].filter(k=>P[k]||D[k]);
   if(!keys.length) return `<div class="hint">Choose exercises above and their weekly sets appear here.</div>`;
-  const max=Math.max(20,...keys.map(k=>Math.max(planned[k]||0,done[k]||0))), pct=v=>(v/max*100)+"%";
-  return keys.map(k=>{ const pl=planned[k]||0, dn=done[k]||0;
-    return `<div class="mrow"><span class="mname">${esc(k)}</span><div class="mtrack"><i class="mband" style="left:${pct(10)};width:${10/max*100}%"></i><i class="mplan${showDone?"":" solid"}" style="width:${pct(pl)}"></i>${showDone?`<i class="mdone" style="width:${pct(dn)}"></i>`:""}</div><span class="mval num">${showDone?dn+"/"+pl:pl}</span></div>`; }).join("");
+  const max=Math.max(24,...keys.map(k=>Math.max(P[k]?P[k].n:0,D[k]?D[k].n:0))), pct=v=>(v/max*100)+"%";
+  return keys.map(k=>{ const pl=P[k]?P[k].n:0, dn=D[k]?D[k].n:0, L=LM[k];
+    const band=L?`<i class="mband" style="left:${pct(L[0])};width:${(L[2]-L[0])/max*100}%"></i><i class="mmrv" style="left:${pct(L[1])};width:${(L[2]-L[1])/max*100}%"></i><i class="mmav" style="left:${pct(L[0])}"></i>`:"";
+    const parts=P[k]?Object.keys(P[k].p):[], sub=parts.length>1?`<div class="msub">${parts.map(m=>esc(m)+" "+P[k].p[m]).join(" · ")}</div>`:"";
+    return `<div class="mrow"><span class="mname">${esc(k)}</span><div class="mtrack">${band}<i class="mplan${showDone?"":" solid"}" style="width:${pct(pl)}"></i>${showDone?`<i class="mdone" style="width:${pct(dn)}"></i>`:""}</div><span class="mval num">${showDone?dn+"/"+pl:pl}</span></div>${sub}`; }).join("");
 }
+const LMNOTE="Back adds Lats and Upper Back, Delts adds front, side and rear. Line = your MAV, pale band = MAV up to the top of your MRV, darker band = your MRV range.";
 function planHTML(){
   const vs=state.volSel||{m:1,w:1};
   let out=programmeCardsHTML();
@@ -2193,7 +2207,7 @@ function planHTML(){
     <div class="segrow"><span class="seglbl disp">Month</span><div class="seg" data-vsel="m">${[1,2,3].map(x=>`<button aria-pressed="${x===vs.m}" data-v="${x}">${x}</button>`).join("")}</div></div>
     <div class="segrow"><span class="seglbl disp">Week</span><div class="seg" data-vsel="w">${[1,2,3,4].map(x=>`<button aria-pressed="${x===vs.w}" data-v="${x}">${x}</button>`).join("")}</div></div>
     <div style="margin-top:14px">${muscleBars(wm.planned,{},false)}</div>
-    <div class="hint">Planned working sets for that week across all sessions. The shaded band marks a 10–20 sets per week guide.</div>
+    <div class="hint">Planned working sets for that week across all sessions. ${LMNOTE}</div>
   </div>
   <div class="card">
     <div class="disp" style="font-size:15px">1RM Calculator</div>
@@ -2268,15 +2282,15 @@ function muscleSectionHTML(){
   const cur=(state.pos.m-1)*4+state.pos.w, pw=state.pw||cur, m=Math.ceil(pw/4), w=((pw-1)%4)+1;
   const wm=[]; for(let k=1;k<=12;k++) wm.push(weekMuscles(Math.ceil(k/4),((k-1)%4)+1));
   const {planned,done}=wm[pw-1];
-  const keys=[...MUSCLES,"Other"].filter(k=>wm.some(x=>x.planned[k]||x.done[k]));
-  const cls=c=>c<=0?"":(c<5?"h1":(c<10?"h2":(c<=20?"h3":"h4")));
-  const heat=keys.length?`<div class="heatwrap"><table class="heat"><thead><tr><th class="m"></th>${wm.map((_,i)=>`<th>W${i+1}</th>`).join("")}</tr></thead><tbody>${keys.map(k=>`<tr><th class="m">${esc(k)}</th>${wm.map((x,i)=>{const c=x.done[k]||0; return `<td class="${cls(c)}${i+1===pw?" cur":""}">${c||"·"}</td>`;}).join("")}</tr>`).join("")}</tbody></table></div>
-    <div class="legend"><span><span class="sw hz"></span>1–4</span><span><span class="sw h2"></span>5–9</span><span><span class="sw h3"></span>10–20 guide</span><span><span class="sw h4"></span>21+</span></div>`:"";
+  const WT=wm.map(x=>lmTotals(x.done));
+  const gkeys=[...LMKEYS,"Other"].filter(k=>wm.some(x=>lmTotals(x.planned)[k]||lmTotals(x.done)[k]));
+  const heat=gkeys.length?`<div class="heatwrap"><table class="heat"><thead><tr><th class="m"></th>${wm.map((_,i)=>`<th>W${i+1}</th>`).join("")}</tr></thead><tbody>${gkeys.map(k=>`<tr><th class="m">${esc(k)}</th>${WT.map((x,i)=>{const c=x[k]?x[k].n:0; return `<td class="${lmClass(k,c)}${i+1===pw?" cur":""}">${c||"·"}</td>`;}).join("")}</tr>`).join("")}</tbody></table></div>
+    <div class="legend"><span><span class="sw h2"></span>Below MAV</span><span><span class="sw h3"></span>MAV to MRV</span><span><span class="sw h4"></span>Over MRV</span></div>`:"";
   return `<div class="sect disp">Weekly sets by muscle</div>
   <div class="card">
     <div class="wkchips" role="group" aria-label="Choose week">${Array.from({length:12},(_,i)=>`<button data-pw="${i+1}" aria-pressed="${i+1===pw}">W${i+1}</button>`).join("")}</div>
     <div style="margin-top:14px">${muscleBars(planned,done,true)}</div>
-    <div class="hint">Completed sets out of planned for week ${pw} (Month ${m}, week ${w}). Solid bar = done, outline = planned, shaded band = 10–20 guide.</div>
+    <div class="hint">Completed sets out of planned for week ${pw} (Month ${m}, week ${w}). Solid bar = done, outline = planned. ${LMNOTE}</div>
   </div>
   ${heat?`<div class="sect disp">Sets per muscle, all 12 weeks</div><div class="card">${heat}</div>`:""}`;
 }
