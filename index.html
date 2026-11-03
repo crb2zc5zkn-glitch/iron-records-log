@@ -165,6 +165,7 @@ header .sub{color:var(--muted); font-size:13px; margin-top:3px}
 .fld.m5{grid-column:span 5} .fld.m7{grid-column:span 7} .fld.m8{grid-column:span 8} .fld.m4{grid-column:span 4}
 .setline{display:flex; gap:8px; align-items:flex-end}
 .setsel{flex:0 0 76px}
+.styletip{margin-top:6px; font-size:12px; color:var(--muted); line-height:1.35}
 .srs{display:flex; flex-wrap:wrap; gap:6px; min-width:0}
 .rp{display:block; width:70px} .rp input{padding-left:6px; padding-right:6px; text-align:center} .rp span{display:block; font-size:10px; color:var(--muted); text-align:center; margin-bottom:1px}
 .lensel{width:auto; min-width:0; padding-right:26px}
@@ -1480,6 +1481,26 @@ function clampPos(){
   if(pos.m>MONTHS()) pos.m=MONTHS();
   const mx=wksIn(pos.m)||1; if(pos.w>mx) pos.w=mx;
 }
+/* a set style suggests a rep scheme: base = the anchor set's range (set 1, or the last set for an ascending pyramid) */
+function anchorIdx(style,n){ return style==="Ascending pyramid"?n-1:0; }
+const fmtR=(a,b)=>a===b?String(a):a+"-"+b;
+function shiftR(r,d){ const [a,b]=repRange(r); return fmtR(Math.min(a+d,19),Math.min(b+d,20)); }
+function styleN(style,cur){ const c=parseInt(cur)||3; return style==="Rest-pause"?3:style==="Myo-reps"?5:(["Top set + back-offs","Ascending pyramid","Reverse pyramid","Drop-set finisher"].includes(style)?Math.max(c,3):c); }
+function styleReps(style,base,n){
+  const [lo,hi]=repRange(base);
+  return Array.from({length:n},(_,i)=>{
+    switch(style){
+      case "Top set + back-offs": return i?shiftR(base,2):base;
+      case "Rest-pause": return i?"3-5":base;
+      case "Myo-reps": return i?"3-5":(lo>=10?base:"12-15");
+      case "Ascending pyramid": return shiftR(base,2*(n-1-i));
+      case "Reverse pyramid": return shiftR(base,2*i);
+      case "Drop-set finisher": return i===n-1?fmtR(Math.min(hi+2,19),Math.min(hi+6,20)):base;
+      default: return base;
+    }
+  });
+}
+const STYLE_TIP={"Top set + back-offs":"Set 1 is the heavy top set; the later sets use about 10% less load for more reps.","Rest-pause":"Set 1 is the main set; the mini-sets are 3-5 reps after 15-25 s rest at the same load.","Myo-reps":"Set 1 is the activation set; the mini-sets are 3-5 reps after 15-20 s rest. Stop when reps drop.","Ascending pyramid":"Reps fall as the load rises; the last set is your target range.","Reverse pyramid":"Heaviest set first, then about 10% less load and more reps each set.","Cluster sets":"Reps are per set; split each set into 2-3-rep clusters with 20 s rests.","Drop-set finisher":"The last set is the drop set: hit near failure, strip 20-25% and keep going."};
 function tierFromReps(r){ const t=repRange(r)[1]; return t<=8?"PRIM":(t<=12?"HT":"SUPP"); }
 function setReps(p,n){
   const base=p.reps||(TIER_DEF[p.tier]||TIER_DEF.PRIM).reps, sr=Array.isArray(p.sr)?p.sr:[];
@@ -2206,19 +2227,19 @@ function planHTML(){
         const fld=(label,ctl,cls)=>`<label class="fld${cls?" "+cls:""}"><span class="fl">${label}</span>${ctl}</label>`;
         const grpSel=`<select data-grp="${k}"><option value="">Any muscle</option>${LIBKEYS().map(g=>`<option value="${esc(g)}" ${g===p.grp?"selected":""}>${esc(g)}</option>`).join("")}</select>`;
         const exSel=`<select data-ex="${k}">${libOptions(p.ex,p.grp)}</select>`;
-        const setOpts=[["",d.wave?"Auto (wave)":"Auto (3)"]].concat([1,2,3,4,5,6,7,8,9,10,11,12].map(n=>[String(n),String(n)]));
+        const setOpts=[["","Auto"]].concat([1,2,3,4,5,6,7,8,9,10,11,12].map(n=>[String(n),String(n)]));
         const setsSel=`<select data-ssets="${k}" aria-label="Number of sets">${setOpts.map(([v,l])=>`<option value="${v}" ${String(p.sets||"")===v?"selected":""}>${l}</option>`).join("")}</select>`;
         const nSets=parseInt(p.sets)||3, srs=setReps(p,nSets);
         const repIns=srs.map((r,i)=>`<label class="rp"><span>${i+1}</span><input class="num" type="text" data-srep="${k}|${i}" value="${esc(r)}" aria-label="Reps for set ${i+1}"></label>`).join("");
-        const styleSel=`<select data-style="${k}">${STYLES.map(x=>`<option ${x===(p.style||"Straight sets")?"selected":""}>${esc(x)}</option>`).join("")}</select>`;
+        const styleSel=`<select data-style="${k}" data-old="${esc(p.style||"Straight sets")}">${STYLES.map(x=>`<option ${x===(p.style||"Straight sets")?"selected":""}>${esc(x)}</option>`).join("")}</select>`;
         const modelSel=`<select data-model="${k}">${MODELS.map(x=>`<option ${x[0]===(p.model||"Double progression")?"selected":""}>${esc(x[0])}</option>`).join("")}</select>`;
         const progSel=`<select data-prog="${k}">${[[0,"None"],[1,"+1 kg"],[1.25,"+1.25 kg"],[2,"+2 kg"],[2.5,"+2.5 kg"],[5,"+5 kg"]].map(([v,l])=>`<option value="${v}" ${+(p.prog||0)===v?"selected":""}>${l}</option>`).join("")}</select>`;
         rows+=`<div class="planslot">
           <div class="slothead tier ${p.tier} disp"><span class="plate"></span>Exercise ${i+1}</div>
           <div class="fields">
             ${fld("Muscle",grpSel,"m5")}${fld("Exercise",exSel,"m7")}
-            <div class="fld wide"><span class="fl">Sets · reps per set</span><div class="setline"><span class="setsel">${setsSel}</span><div class="srs">${repIns}</div></div></div>
-            ${fld("Set style",styleSel,"wide")}
+            ${fld("Sets",setsSel,"m4")}${fld("Set style",styleSel,"m8")}
+            <div class="fld wide"><span class="fl">Reps per set</span><div class="srs">${repIns}</div>${(p.style&&STYLE_TIP[p.style])?`<div class="styletip">${esc(STYLE_TIP[p.style])}</div>`:""}</div>
             ${fld("Progression",modelSel,"m8")}${fld("Weight jump",progSel,"m4")}
           </div>
         </div>`;
@@ -2490,7 +2511,17 @@ function initDock(){
 /* ================= wiring ================= */
 function wireExtra(v){
   wireSync(v);
-  v.querySelectorAll("[data-style]").forEach(sel=>sel.addEventListener("change",()=>{ const [s,mth,slot]=sel.dataset.style.split("|"); state.plan[s][mth][slot].style=sel.value; save(); }));
+  v.querySelectorAll("[data-style]").forEach(sel=>sel.addEventListener("change",()=>{
+    const [s,mth,slot]=sel.dataset.style.split("|"), p=state.plan[s][mth][slot];
+    if(state.tab!=="plan"){ p.style=sel.value; save(); return; }
+    const n0=parseInt(p.sets)||3, base=p.base||setReps(p,n0)[anchorIdx(p.style||"Straight sets",n0)];
+    p.base=base; p.style=sel.value;
+    const forced=x=>x==="Rest-pause"||x==="Myo-reps", old=sel.dataset.old||"Straight sets";
+    if(forced(p.style)&&!forced(old)) p.setsBase=n0;
+    const n=styleN(p.style,(!forced(p.style)&&forced(old)&&p.setsBase)?p.setsBase:p.sets); p.sets=n;
+    p.sr=styleReps(p.style,base,n); p.reps=p.sr[0]; p.tier=tierFromReps(base); save(); render();
+    if(p.style!=="Straight sets") toast("Reps set to suit "+p.style+" — edit any box");
+  }));
   v.querySelectorAll("[data-model]").forEach(sel=>sel.addEventListener("change",()=>{ const [s,mth,slot]=sel.dataset.model.split("|"); state.plan[s][mth][slot].model=sel.value; save(); }));
   v.querySelectorAll("[data-vsel]").forEach(seg=>seg.addEventListener("click",e=>{ const b=e.target.closest("button[data-v]"); if(!b) return; state.volSel[seg.dataset.vsel]=+b.dataset.v; save(); render(); }));
   const bn=v.querySelector("#blockname"); if(bn) bn.addEventListener("change",()=>{ state.block.name=bn.value.trim()||"Untitled block"; save(); });
@@ -2564,8 +2595,8 @@ function wire(){
     }));
     v.querySelectorAll("[data-ex]").forEach(sel=>sel.addEventListener("change",()=>{ const [s,mth,slot]=sel.dataset.ex.split("|"); const p=state.plan[s][mth][slot]; p.ex=sel.value; if(p.ex && !p.grp) p.grp=findGroup(p.ex); save(); render(); }));
     v.querySelectorAll("[data-prog]").forEach(sel=>sel.addEventListener("change",()=>{ const [s,mth,slot]=sel.dataset.prog.split("|"); state.plan[s][mth][slot].prog=parseFloat(sel.value)||0; save(); }));
-    v.querySelectorAll("[data-ssets]").forEach(sel=>sel.addEventListener("change",()=>{ const [s,mth,slot]=sel.dataset.ssets.split("|"); const p=state.plan[s][mth][slot]; p.sets=sel.value===""?"":parseInt(sel.value); p.sr=setReps(p,parseInt(p.sets)||3); save(); render(); }));
-    v.querySelectorAll("[data-srep]").forEach(inp=>inp.addEventListener("change",()=>{ const [s,mth,slot,i]=inp.dataset.srep.split("|"); const p=state.plan[s][mth][slot]; const n=parseInt(p.sets)||3; p.sr=setReps(p,n); const val=inp.value.trim().replace(/\s+/g,""); if(/\d/.test(val)) p.sr[+i]=val; else inp.value=p.sr[+i]; p.reps=p.sr[0]; p.tier=tierFromReps(p.reps); save(); }));
+    v.querySelectorAll("[data-ssets]").forEach(sel=>sel.addEventListener("change",()=>{ const [s,mth,slot]=sel.dataset.ssets.split("|"); const p=state.plan[s][mth][slot]; const n0=parseInt(p.sets)||3, base=p.base||setReps(p,n0)[anchorIdx(p.style||"Straight sets",n0)]; delete p.setsBase; p.sets=sel.value===""?"":parseInt(sel.value); const n=parseInt(p.sets)||3; p.sr=(p.style&&p.style!=="Straight sets")?styleReps(p.style,base,n):setReps(p,n); p.reps=p.sr[0]; save(); render(); }));
+    v.querySelectorAll("[data-srep]").forEach(inp=>inp.addEventListener("change",()=>{ const [s,mth,slot,i]=inp.dataset.srep.split("|"); const p=state.plan[s][mth][slot]; const n=parseInt(p.sets)||3; p.sr=setReps(p,n); const val=inp.value.trim().replace(/\s+/g,""); if(/\d/.test(val)){ p.sr[+i]=val; if(+i===anchorIdx(p.style||"Straight sets",n)) p.base=val; } else inp.value=p.sr[+i]; p.reps=p.sr[0]; p.tier=tierFromReps(p.base||p.reps); save(); }));
     v.querySelectorAll("[data-copy]").forEach(b=>b.addEventListener("click",()=>{
       const s=b.dataset.copy;
       for(const mth of [2,3]) state.plan[s][mth]=JSON.parse(JSON.stringify(state.plan[s][1]));
