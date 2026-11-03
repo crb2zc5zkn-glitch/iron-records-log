@@ -295,6 +295,15 @@ table.heat td.cur{outline:2px solid var(--ink); outline-offset:-2px}
 .legend .sw.h4{background:var(--accent)}
 .modelnote{margin-top:8px; font-size:12.5px; color:var(--muted); line-height:1.35}
 .modelnote b{color:var(--ink)}
+/* preset programmes */
+.pdet{border-top:1px solid var(--line)}
+.pdet:first-child{border-top:none}
+.lacc .pdet summary{cursor:pointer; list-style:none; display:flex; flex-direction:column; align-items:flex-start; text-align:left; gap:2px; padding:11px 0}
+.lacc .pdet summary::-webkit-details-marker{display:none}
+.pdet .pgname{font-weight:700; font-size:15px}
+.pdbody{padding:0 0 12px}
+.pdday{font-size:13px; color:var(--muted); margin:8px 0; line-height:1.4}
+.pdday b{color:var(--ink)}
 /* library */
 .lacc{border:1px solid var(--line); border-radius:12px; background:var(--card); margin-bottom:9px; overflow:hidden}
 .lacc summary{cursor:pointer; padding:13px 14px; font-weight:700; font-size:15px; display:flex; align-items:center; gap:8px; list-style:none}
@@ -377,6 +386,938 @@ function findGroup(ex){ for(const g of LIBKEYS()) if(state.library[g].includes(e
 function normName(x){ return String(x).toLowerCase().replace(/[^a-z0-9]/g,""); }
 function uid(){ return Math.random().toString(36).slice(2,9); }
 function clone(o){ return JSON.parse(JSON.stringify(o)); }
+const PRESET_GROUPS = [["lifto", "From your Liftosaur"], ["plans", "Saved plans from your spreadsheet"], ["tmpl", "Muscle templates (you pick the exercises)"]];
+const PRESETS = [
+{
+"id": "superman",
+"group": "lifto",
+"name": "Superman",
+"note": "Renaissance-style hypertrophy. Starts at 2 sets per exercise and the dynamic double progression adds load set by set; add sets yourself when recovery allows (set count stays flat here).",
+"days": [
+[
+"Chest, Delts & Back",
+[
+"Incline Bench Press|Chest|H|10-15|2|||",
+"Close Grip Bench Press|Chest|H|10-15|2|||",
+"Kettlebell Lateral Raise|Side Delt|I|10-15|2|||",
+"Barbell Upright Row|Side Delt|I|10-15|2|||",
+"Seated Row (Machine)|Upper Back|H|10-15|2|||"
+]
+],
+[
+"Legs & Arms",
+[
+"Back Squat|Quads|H|10-15|2|||",
+"Good Morning|Hams|H|10-15|2|||",
+"Dumbbell Skullcrusher|Triceps|I|10-15|2|||",
+"Dumbbell Curl|Biceps|I|10-15|2|||"
+]
+],
+[
+"Back, Chest & Delts",
+[
+"Pull Up|Lats|H|5-30|2|||",
+"Assisted Pull Up|Lats|H|10-15|2|||",
+"Bench Press|Chest|H|10-15|2|||",
+"Incline Dumbbell Bench Press|Chest|H|10-15|2|||",
+"Cable Upright Row|Side Delt|I|10-15|2|||"
+]
+],
+[
+"Arms & Legs",
+[
+"Cable Curl|Biceps|I|10-15|2|||",
+"Tricep Pushdown|Triceps|I|10-15|2|||",
+"Lying leg curl|Hams|H|10-15|2|||",
+"Leg Press|Quads|H|10-15|2|5||"
+]
+],
+[
+"Delts, Back & Chest",
+[
+"Cable lateral raise|Side Delt|I|15-20|2|||",
+"Cable Front Raise|Front Delt|I|15-20|2|||",
+"Lat Pulldown|Lats|H|15-20|2|||",
+"Cable Pullover|Lats|I|15-20|2|||",
+"Push Up|Chest|H|15-20|2|||"
+]
+]
+]
+},
+{
+"id": "superman-tf",
+"group": "lifto",
+"name": "Superman – To Failure",
+"note": "Same layout with the Day 1 chest and delt work swapped for the 'To Failure' version. Take every set to failure (RPE 10). Renaissance-style hypertrophy. Starts at 2 sets per exercise and the dynamic double progression adds load set by set; add sets yourself when recovery allows (set count stays flat here).",
+"days": [
+[
+"Chest, Delts & Back",
+[
+"Incline Bench Press|Chest|H|10-15|2|||",
+"Chest Cable Fly|Chest|I|10-15|2|||",
+"DB lateral raise|Side Delt|I|10-15|2|||",
+"Dumbbell Upright Row|Side Delt|I|10-15|2|||",
+"Seated Row (Machine)|Upper Back|H|10-15|2|||"
+]
+],
+[
+"Legs & Arms",
+[
+"Back Squat|Quads|H|10-15|2|||",
+"Good Morning|Hams|H|10-15|2|||",
+"Dumbbell Skullcrusher|Triceps|I|10-15|2|||",
+"Dumbbell Curl|Biceps|I|10-15|2|||"
+]
+],
+[
+"Back, Chest & Delts",
+[
+"Pull Up|Lats|H|5-30|2|||",
+"Assisted Pull Up|Lats|H|10-15|2|||",
+"Bench Press|Chest|H|10-15|2|||",
+"Incline Dumbbell Bench Press|Chest|H|10-15|2|||",
+"Cable Upright Row|Side Delt|I|10-15|2|||"
+]
+],
+[
+"Arms & Legs",
+[
+"Cable Curl|Biceps|I|10-15|2|||",
+"Tricep Pushdown|Triceps|I|10-15|2|||",
+"Lying leg curl|Hams|H|10-15|2|||",
+"Leg Press|Quads|H|10-15|2|5||"
+]
+],
+[
+"Delts, Back & Chest",
+[
+"Cable lateral raise|Side Delt|I|15-20|2|||",
+"Cable Front Raise|Front Delt|I|15-20|2|||",
+"Lat Pulldown|Lats|H|15-20|2|||",
+"Cable Pullover|Lats|I|15-20|2|||",
+"Push Up|Chest|H|15-20|2|||"
+]
+]
+]
+},
+{
+"id": "thor",
+"group": "lifto",
+"name": "Thor",
+"note": "Renaissance-style hypertrophy. Starts at 2 sets per exercise and the dynamic double progression adds load set by set; add sets yourself when recovery allows (set count stays flat here).",
+"days": [
+[
+"Back, Shoulders & Arms",
+[
+"Barbell Row|Upper Back|H|10-15|2|||",
+"Chin Up|Lats|H|10-15|2|||",
+"DB lateral raise|Side Delt|I|10-15|2|||",
+"Dumbbell Curl|Biceps|I|10-15|2|||",
+"EZ Bar Triceps Extension|Triceps|I|10-15|2|||"
+]
+],
+[
+"Chest, Legs & Abs",
+[
+"Back Squat|Quads|H|10-15|2|||",
+"Good Morning|Hams|H|10-15|2|||",
+"Incline Dumbbell Bench Press|Chest|H|10-15|2|||",
+"Decline Sit Up|Abs|I|10-15|2|||"
+]
+],
+[
+"Back, Shoulders & Arms",
+[
+"Cable lateral raise|Side Delt|I|15-20|2|||",
+"Barbell Upright Row|Side Delt|I|5-30|2|||",
+"Seated Row (Machine)|Upper Back|H|15-20|2|||",
+"EZ Bar Curl|Biceps|I|15-20|2|||",
+"Tricep Pushdown|Triceps|I|15-20|2|||"
+]
+],
+[
+"Chest, Legs & Abs",
+[
+"Plate Loaded Chest Press|Chest|H|10-15|2|||",
+"Hanging Leg Raise|Abs|I|10-15|2|||",
+"Dumbbell Lunge|Quads|H|10-15|2|||",
+"Dumbbell Stiff Leg Deadlift|Hams|H|10-15|2|||"
+]
+],
+[
+"Back, Shoulders & Arms",
+[
+"Pull Up|Lats|H|10-15|2|||",
+"Inverted Row|Upper Back|H|10-15|2|||",
+"Cable Curl|Biceps|I|10-15|2|||",
+"Incline DB curl|Biceps|I|10-15|2|||",
+"Dumbbell Skullcrusher|Triceps|I|10-15|2|||",
+"Overhead cable extension|Triceps|I|10-15|2|||",
+"Cable Upright Row|Side Delt|I|10-15|2|||"
+]
+]
+]
+},
+{
+"id": "thor-tf",
+"group": "lifto",
+"name": "Thor – To Failure",
+"note": "Thor with every set taken to failure (RPE 10). Renaissance-style hypertrophy. Starts at 2 sets per exercise and the dynamic double progression adds load set by set; add sets yourself when recovery allows (set count stays flat here).",
+"days": [
+[
+"Back, Shoulders & Arms",
+[
+"Barbell Row|Upper Back|H|10-15|2|||",
+"Chin Up|Lats|H|10-15|2|||",
+"DB lateral raise|Side Delt|I|10-15|2|||",
+"Dumbbell Curl|Biceps|I|10-15|2|||",
+"EZ Bar Triceps Extension|Triceps|I|10-15|2|||"
+]
+],
+[
+"Chest, Legs & Abs",
+[
+"Back Squat|Quads|H|10-15|2|||",
+"Good Morning|Hams|H|10-15|2|||",
+"Incline Dumbbell Bench Press|Chest|H|10-15|2|||",
+"Decline Sit Up|Abs|I|10-15|2|||"
+]
+],
+[
+"Back, Shoulders & Arms",
+[
+"Cable lateral raise|Side Delt|I|15-20|2|||",
+"Barbell Upright Row|Side Delt|I|5-30|2|||",
+"Seated Row (Machine)|Upper Back|H|15-20|2|||",
+"EZ Bar Curl|Biceps|I|15-20|2|||",
+"Tricep Pushdown|Triceps|I|15-20|2|||"
+]
+],
+[
+"Chest, Legs & Abs",
+[
+"Plate Loaded Chest Press|Chest|H|10-15|2|||",
+"Hanging Leg Raise|Abs|I|10-15|2|||",
+"Dumbbell Lunge|Quads|H|10-15|2|||",
+"Dumbbell Stiff Leg Deadlift|Hams|H|10-15|2|||"
+]
+],
+[
+"Back, Shoulders & Arms",
+[
+"Pull Up|Lats|H|10-15|2|||",
+"Inverted Row|Upper Back|H|10-15|2|||",
+"Cable Curl|Biceps|I|10-15|2|||",
+"Incline DB curl|Biceps|I|10-15|2|||",
+"Dumbbell Skullcrusher|Triceps|I|10-15|2|||",
+"Overhead cable extension|Triceps|I|10-15|2|||",
+"Cable Upright Row|Side Delt|I|10-15|2|||"
+]
+]
+]
+},
+{
+"id": "black-adam",
+"group": "lifto",
+"name": "Black Adam",
+"note": "Renaissance-style hypertrophy. Starts at 2 sets per exercise and the dynamic double progression adds load set by set; add sets yourself when recovery allows (set count stays flat here).",
+"days": [
+[
+"Back, Chest & Delts",
+[
+"Barbell Row|Upper Back|H|10-15|2|||",
+"Assisted Pull Up|Lats|H|10-15|2|||",
+"Incline Bench Press|Chest|H|10-15|2|||",
+"Dumbbell Bench Press|Chest|H|10-15|2|||",
+"Face Pull|Rear Delt|I|5-30|2|||"
+]
+],
+[
+"Arms & Legs",
+[
+"Lying Dumbbell Curl|Biceps|I|10-15|2|||",
+"Skullcrusher|Triceps|I|10-15|2|||",
+"Close Grip Bench Press|Chest|H|10-15|2|||",
+"Lying leg curl|Hams|H|10-15|2|||",
+"Hack Squat|Quads|H|10-15|2|||"
+]
+],
+[
+"Chest, Delts & Back",
+[
+"Bench Press|Chest|H|10-15|2|||",
+"Incline Dumbbell Bench Press|Chest|H|10-15|2|||",
+"Cable Upright Row|Side Delt|I|10-15|2|||",
+"Seated Row (Machine)|Upper Back|H|10-15|2|||",
+"Seated Neutral Grip Cable Row|Upper Back|H|10-15|2|||"
+]
+],
+[
+"Legs & Arms",
+[
+"Barbell Stiff Leg Deadlift|Hams|H|10-15|2|||",
+"Leg Press|Quads|H|10-15|2|5||",
+"Lying Cable Curl|Biceps|I|10-15|2|||",
+"Tricep Pushdown|Triceps|I|10-15|2|||",
+"Push Up|Chest|I|5-30|2|||"
+]
+],
+[
+"Delts, Back & Chest",
+[
+"Dumbbell Upright Row|Side Delt|I|10-15|2|||",
+"Chin Up|Lats|H|10-15|2|||",
+"Barbell Row|Upper Back|H|10-15|2|||",
+"Plate Loaded Chest Press|Chest|H|10-15|2|||",
+"Smith Machine Incline Press|Chest|H|10-15|2|||"
+]
+]
+]
+},
+{
+"id": "mentzer-yates",
+"group": "lifto",
+"name": "Mentzer / Yates",
+"note": "Two sets per exercise: a top set to failure, then a lighter back-off set. Each muscle once a week, plate-loaded machines. Liftosaur cut the back-off weight about 20%; the Top set + back-offs style here cuts about 10%, and back-off reps (10–15) are not tracked separately. Stalled: add a rest day, never sets.",
+"days": [
+[
+"Chest & Biceps",
+[
+"Incline machine press|Chest|S|6-10|2|2.5|Top set + back-offs|Double progression",
+"Seated Dip Machine (Chest Bias)|Chest|S|6-10|2|2.5|Top set + back-offs|Double progression",
+"Machine fly / pec deck|Chest|H|8-12|2|1.25|Top set + back-offs|Double progression",
+"Machine Bicep Curl|Biceps|I|8-12|2|2|Top set + back-offs|Double progression",
+"Preacher Curl|Biceps|I|8-12|2|2|Top set + back-offs|Double progression"
+]
+],
+[
+"Legs",
+[
+"Hack Squat|Quads|S|8-12|2|5|Top set + back-offs|Double progression",
+"Leg Press|Quads|H|8-12|2|5|Top set + back-offs|Double progression",
+"Leg Extension|Quads|I|8-12|2|2.5|Top set + back-offs|Double progression",
+"Seated Leg Curl|Hams|H|8-12|2|2.5|Top set + back-offs|Double progression",
+"Lying leg curl|Hams|I|8-12|2|2.5|Top set + back-offs|Double progression",
+"Standing calf raise|Calves|I|10-15|2|5|Top set + back-offs|Double progression"
+]
+],
+[
+"Shoulders & Triceps",
+[
+"Machine shoulder press|Front Delt|S|6-10|2|2.5|Top set + back-offs|Double progression",
+"Machine lateral raise|Side Delt|I|8-12|2|1.25|Top set + back-offs|Double progression",
+"Reverse pec deck|Rear Delt|I|8-12|2|1.25|Top set + back-offs|Double progression",
+"Seated Dip Machine (Tricep Bias)|Triceps|H|8-12|2|2.5|Top set + back-offs|Double progression",
+"Machine Tricep Pushdown|Triceps|I|8-12|2|1.25|Top set + back-offs|Double progression"
+]
+],
+[
+"Back",
+[
+"Scissor pulldown|Lats|S|6-10|2|2.5|Top set + back-offs|Double progression",
+"Scissor pulldown (wide grip)|Lats|S|6-10|2|2.5|Top set + back-offs|Double progression",
+"Rotary row|Upper Back|S|6-10|2|2.5|Top set + back-offs|Double progression",
+"High Row|Upper Back|H|8-12|2|2.5|Top set + back-offs|Double progression"
+]
+]
+]
+},
+{
+"id": "531-triumvirate",
+"group": "lifto",
+"name": "5/3/1 Triumvirate",
+"note": "4 days: a main lift plus two assistance lifts. Week-1 (5s) layout. Main lifts use Step loading: hold three weeks, then jump (+2.5 kg press and bench, +5 kg squat and deadlift). Simplified: the weekly percentage waves and training-max maths aren't modelled. You get the lifts, sets and reps; enter your own weights.",
+"days": [
+[
+"Press",
+[
+"Overhead Press|Front Delt|S|5|3|1.25|Straight sets|Step loading",
+"Chest Dip|Chest|I|15|5|0|Straight sets|Double progression",
+"Scissor pulldown|Lats|H|10|5||Straight sets|Double progression"
+]
+],
+[
+"Deadlift",
+[
+"Deadlift|Hams|S|5|3|2.5|Straight sets|Step loading",
+"Back Extension|Erectors|I|12|5||Straight sets|Double progression",
+"Hanging Leg Raise|Abs|I|15|5||Straight sets|Double progression",
+"Swiss Bar Hammer Curl|Biceps|I|10|5||Straight sets|Double progression"
+]
+],
+[
+"Bench",
+[
+"Bench Press|Chest|S|5|3|1.25|Straight sets|Step loading",
+"Incline machine press|Chest|H|15|5||Straight sets|Double progression",
+"Rotary row|Upper Back|H|10|5||Straight sets|Double progression"
+]
+],
+[
+"Squat",
+[
+"Belt Squat|Quads|S|5|3|2.5|Straight sets|Step loading",
+"Leg Press (low + narrow)|Quads|H|15|5|5|Straight sets|Double progression",
+"Seated Leg Curl|Hams|H|10|5||Straight sets|Double progression",
+"EZ Bar Triceps Extension|Triceps|I|10|5||Straight sets|Double progression"
+]
+]
+]
+},
+{
+"id": "531-monolith",
+"group": "lifto",
+"name": "5/3/1: The Monolith",
+"note": "3 days, week-1 layout of the 6-week program. Simplified: the weekly percentage waves and training-max maths aren't modelled. You get the lifts, sets and reps; enter your own weights.",
+"days": [
+[
+"Squat / Press",
+[
+"Belt Squat|Quads|S|5|7|2.5|Straight sets|Step loading",
+"Overhead Press|Front Delt|S|5|4|1.25|Straight sets|Step loading",
+"Scissor pulldown|Lats|H|20|5||Straight sets|Double progression",
+"Cable Upright Row|Side Delt|I|20|5||Straight sets|Double progression",
+"Chest Dip|Chest|I|30|5|0|Straight sets|Double progression"
+]
+],
+[
+"Deadlift / Incline",
+[
+"Deadlift|Hams|S|5|5|2.5|Straight sets|Step loading",
+"Incline machine press|Chest|S|5|7|1.25|Straight sets|Step loading",
+"Rotary row|Upper Back|H|10-20|5||Straight sets|Double progression",
+"Preacher Curl|Biceps|I|20|5||Straight sets|Double progression"
+]
+],
+[
+"Squat / Press volume",
+[
+"Belt Squat|Quads|S|5|4|2.5|Straight sets|Step loading",
+"Overhead Press|Front Delt|S|5|10|1.25|Straight sets|Step loading",
+"Scissor pulldown|Lats|H|5|5||Straight sets|Double progression",
+"Cable Upright Row|Side Delt|I|20|5||Straight sets|Double progression",
+"Shrug|Upper Back|I|20|5||Straight sets|Double progression"
+]
+]
+]
+},
+{
+"id": "5s-pro-fsl",
+"group": "lifto",
+"name": "5s PRO + 5x5 FSL",
+"note": "3 days, one lift each: three 5-rep PRO sets, then 5×5 first-set-last. Shown as 8 sets of 5. Simplified: the weekly percentage waves and training-max maths aren't modelled. You get the lifts, sets and reps; enter your own weights.",
+"days": [
+[
+"Squat",
+[
+"Back Squat|Quads|S|5|8|2.5|Straight sets|Step loading"
+]
+],
+[
+"Bench Press",
+[
+"Bench Press|Chest|S|5|8|1.25|Straight sets|Step loading"
+]
+],
+[
+"Deadlift",
+[
+"Deadlift|Hams|S|5|8|2.5|Straight sets|Step loading"
+]
+]
+]
+},
+{
+"id": "gg-bbb",
+"group": "lifto",
+"name": "GG-BBB",
+"note": "4 days: a heavy top set (3–6 reps, then singles and doubles), Boring But Big 4×10, then two accessory lifts at 3 sets of 8–15. Simplified: the weekly percentage waves and training-max maths aren't modelled. You get the lifts, sets and reps; enter your own weights.",
+"days": [
+[
+"OHP",
+[
+"Overhead Press|Front Delt|S|3-6|5|1.25|Straight sets|Linear load",
+"Close Grip Bench Press|Chest|H|10|4|2|Straight sets|Double progression",
+"Chin Up|Lats|I|8-15|3|0|Straight sets|Double progression",
+"Skullcrusher|Triceps|I|8-15|3|2|Straight sets|Double progression"
+]
+],
+[
+"Deadlift",
+[
+"Deadlift|Hams|S|3-6|5|2.5|Straight sets|Linear load",
+"Leg Press (low + narrow)|Quads|H|10|4|5|Straight sets|Double progression",
+"Hammer Curl (Arm Machine)|Biceps|I|8-15|3|2|Straight sets|Double progression",
+"Hanging Leg Raise|Abs|I|8-15|3|0|Straight sets|Double progression"
+]
+],
+[
+"Bench",
+[
+"Bench Press|Chest|S|3-6|5|1.25|Straight sets|Linear load",
+"Overhead Press|Front Delt|H|10|4|2|Straight sets|Double progression",
+"Overhead cable extension|Triceps|I|8-15|3|2|Straight sets|Double progression",
+"Hammer Curl|Biceps|I|8-15|3|2|Straight sets|Double progression"
+]
+],
+[
+"Squat",
+[
+"Back Squat|Quads|S|3-6|5|2.5|Straight sets|Linear load",
+"Romanian deadlift|Hams|H|10|4|5|Straight sets|Double progression",
+"Pull Up|Lats|I|8-15|3|0|Straight sets|Double progression",
+"Ab Wheel Rollout|Abs|I|8-15|3|0|Straight sets|Double progression"
+]
+]
+]
+},
+{
+"id": "lppu",
+"group": "plans",
+"name": "L P P L U",
+"note": "Lower, Push, Pull, Lower, Upper. Exercises are from your spreadsheet; sets come from its sets-per-muscle table where the muscles matched. Calf raise (Lower 1) and Hammer curl (Push) had no matching row, so they use 3. Pull has a third Back row in your table with no exercise yet.",
+"days": [
+[
+"Lower",
+[
+"Lying leg curl|Hams|H||2||Straight sets|Dynamic double progression",
+"Hack Squat|Quads|H||4||Straight sets|Dynamic double progression",
+"Leg Press|Quads|H||4||Straight sets|Dynamic double progression",
+"Cable Hip Abduction|Glutes|I||3||Straight sets|Dynamic double progression",
+"Smith Machine Calf Raise|Calves|I||3||Straight sets|Dynamic double progression",
+"EZ Bar Curl|Biceps|I||3||Straight sets|Dynamic double progression",
+"Hanging Knee Raise|Abs|I||4||Straight sets|Dynamic double progression"
+]
+],
+[
+"Push",
+[
+"Bench-Supported Cable Fly|Chest|H||4||Straight sets|Dynamic double progression",
+"Incline Cable Press|Chest|H||4||Straight sets|Dynamic double progression",
+"Close Grip Bench Press|Triceps|H||3||Straight sets|Dynamic double progression",
+"Tricep Pushdown|Triceps|I||3||Straight sets|Dynamic double progression",
+"Cable lateral raise|Side Delt|I||3||Straight sets|Dynamic double progression",
+"Rope Hammer Curl|Biceps|I||||Straight sets|Dynamic double progression"
+]
+],
+[
+"Pull",
+[
+"Weighted Pull Up|Lats|H||4||Straight sets|Dynamic double progression",
+"Cable row|Upper Back|H||4||Straight sets|Dynamic double progression",
+"Cable Curl|Biceps|I||3||Straight sets|Dynamic double progression",
+"Bayesian cable curl|Biceps|I||3||Straight sets|Dynamic double progression",
+"Cable Upright Row|Side Delt|I||3||Straight sets|Dynamic double progression",
+"Reverse Cable Crossover|Rear Delt|I||3||Straight sets|Dynamic double progression"
+]
+],
+[
+"Lower",
+[
+"Sumo Deadlift|Glutes|H||4||Straight sets|Dynamic double progression",
+"Barbell Stiff Leg Deadlift|Hams|H||2||Straight sets|Dynamic double progression",
+"Leg Press|Quads|H||3||Straight sets|Dynamic double progression",
+"Hack Squat|Quads|H||3||Straight sets|Dynamic double progression",
+"Cable Side Bend|Abs|I||4||Straight sets|Dynamic double progression",
+"Face Pull|Rear Delt|I||3||Straight sets|Dynamic double progression"
+]
+],
+[
+"Upper",
+[
+"Cable Shoulder Press|Front Delt|H||3||Straight sets|Dynamic double progression",
+"JM Press|Triceps|H||3||Straight sets|Dynamic double progression",
+"Cable Skullcrusher|Triceps|I||3||Straight sets|Dynamic double progression",
+"Underhand Cable Fly|Chest|H||4||Straight sets|Dynamic double progression",
+"Cable Preacher Curl|Biceps|I||3||Straight sets|Dynamic double progression",
+"Rope Hammer Curl|Biceps|I||3||Straight sets|Dynamic double progression",
+"Lat Pulldown|Lats|H||4||Straight sets|Dynamic double progression"
+]
+]
+]
+},
+{
+"id": "minimal-ab",
+"group": "plans",
+"name": "Minimalist A/B (2 days)",
+"note": "Two days a week. Two AMRAP working sets per lift (about 80% then 70%) using Top set + back-offs; the 50%/70% warm-ups aren't modelled. Two ISO slots on Workout B had no exercise so they were left out.",
+"days": [
+[
+"Workout A",
+[
+"Weighted dip|Chest|S|6-8|2||Top set + back-offs|Double progression",
+"Deadlift|Hams|S|6-8|2||Top set + back-offs|Double progression",
+"Cable row|Upper Back|H|8-10|2||Top set + back-offs|Double progression",
+"Supinated Pulldown|Lats|H|8-10|2||Top set + back-offs|Double progression",
+"Rear Delt Fly|Rear Delt|I|8-10|2||Top set + back-offs|Double progression",
+"|Triceps|I|8-10|2||Top set + back-offs|Double progression"
+]
+],
+[
+"Workout B",
+[
+"Back Squat|Quads|S|6-8|2||Top set + back-offs|Double progression",
+"Overhead Press|Front Delt|S|6-8|2||Top set + back-offs|Double progression",
+"Weighted chin-up|Lats|S|6-8|2||Top set + back-offs|Double progression",
+"Hammer Curl|Biceps|I|8-10|2||Top set + back-offs|Double progression"
+]
+]
+]
+},
+{
+"id": "mentzer-hd",
+"group": "plans",
+"name": "Mentzer Heavy Duty – ideal routine",
+"note": "Three days, one all-out set per exercise (rep ranges from your sheet; '6–10' ranges came through as dates and were restored).",
+"days": [
+[
+"Chest & Back",
+[
+"Bench-Supported Cable Fly|Chest|S|6-10|1||Straight sets|Double progression",
+"Smith Close-Grip Incline Press|Chest|S|6-10|1||Straight sets|Double progression",
+"Straight Arm Pulldown|Lats|S|6-10|1||Straight sets|Double progression",
+"Supinated Pulldown|Lats|S|6-10|1||Straight sets|Double progression",
+"Seated Neutral Grip Cable Row|Upper Back|S|6-10|1||Straight sets|Double progression"
+]
+],
+[
+"Legs",
+[
+"Leg Press (low + narrow)|Quads|H|10-15|1||Straight sets|Double progression",
+"Leg Press|Quads|S|8-12|1||Straight sets|Double progression",
+"Romanian deadlift|Hams|H|10-12|1||Straight sets|Double progression",
+"Calf Raise|Calves|I|15-20|1||Straight sets|Double progression"
+]
+],
+[
+"Shoulders & Arms",
+[
+"Incline Smith Overhead Press|Front Delt|S|6-10|1||Straight sets|Double progression",
+"Cable Upright Row|Side Delt|H|10-12|1||Straight sets|Double progression",
+"Bayesian cable curl|Biceps|S|6-10|1||Straight sets|Double progression",
+"Overhead cable extension|Triceps|S|6-10|1||Straight sets|Double progression",
+"Cable Crunch|Abs|I|15-25|1||Straight sets|Double progression"
+]
+]
+]
+},
+{
+"id": "t-arms-delts",
+"group": "tmpl",
+"name": "Arms + Delts",
+"note": "Muscle slots only. Choose the exercise for each slot in Plan.",
+"days": [
+[
+"Day 1",
+[
+"|Triceps|I|||||",
+"|Triceps|I|||||",
+"|Triceps|I|||||",
+"|Biceps|I|||||",
+"|Front Delt|I|||||",
+"|Forearms|I|||||"
+]
+],
+[
+"Day 2",
+[
+"|Chest|H|||||",
+"|Upper Back|H|||||",
+"|Quads|H|||||",
+"|Glutes|H|||||",
+"|Hams|I|||||",
+"|Calves|I|||||"
+]
+],
+[
+"Day 3",
+[
+"|Biceps|I|||||",
+"|Biceps|I|||||",
+"|Biceps|I|||||",
+"|Triceps|I|||||",
+"|Rear Delt|I|||||",
+"|Forearms|I|||||"
+]
+],
+[
+"Day 4",
+[
+"|Upper Back|H|||||",
+"|Chest|I|||||",
+"|Glutes|H|||||",
+"|Hams|H|||||",
+"|Quads|H|||||",
+"|Calves|I|||||"
+]
+],
+[
+"Day 5",
+[
+"|Side Delt|I|||||",
+"|Front Delt|H|||||",
+"|Rear Delt|I|||||",
+"|Lats|H|||||",
+"|Triceps|I|||||",
+"|Biceps|I|||||",
+"|Upper Back|I|||||"
+]
+]
+]
+},
+{
+"id": "t-upper-focus",
+"group": "tmpl",
+"name": "Upper Focus",
+"note": "Muscle slots only. Choose the exercise for each slot in Plan.",
+"days": [
+[
+"Day 1",
+[
+"|Chest|H|||||",
+"|Chest|H|||||",
+"|Chest|H|||||",
+"|Triceps|I|||||",
+"|Side Delt|I|||||",
+"|Quads|H|||||",
+"|Glutes|H|||||"
+]
+],
+[
+"Day 2",
+[
+"|Upper Back|H|||||",
+"|Upper Back|H|||||",
+"|Upper Back|H|||||",
+"|Biceps|I|||||",
+"|Forearms|I|||||",
+"|Hams|I|||||",
+"|Calves|I|||||"
+]
+],
+[
+"Day 3",
+[
+"|Triceps|I|||||",
+"|Triceps|I|||||",
+"|Triceps|I|||||",
+"|Chest|H|||||",
+"|Side Delt|I|||||"
+]
+],
+[
+"Day 4",
+[
+"|Biceps|I|||||",
+"|Biceps|I|||||",
+"|Biceps|I|||||",
+"|Upper Back|H|||||",
+"|Forearms|I|||||"
+]
+],
+[
+"Day 5",
+[
+"|Side Delt|I|||||",
+"|Side Delt|I|||||",
+"|Side Delt|I|||||",
+"|Glutes|H|||||",
+"|Hams|I|||||",
+"|Quads|H|||||"
+]
+]
+]
+},
+{
+"id": "t-chest-back",
+"group": "tmpl",
+"name": "Chest & Back",
+"note": "Muscle slots only. Choose the exercise for each slot in Plan. (The 'VS' block in your sheet is an identical copy, so it isn't repeated.)",
+"days": [
+[
+"Day 1",
+[
+"|Chest|H|||||",
+"|Chest|H|||||",
+"|Chest|H|||||",
+"|Upper Back|H|||||",
+"|Side Delt|I|||||"
+]
+],
+[
+"Day 2",
+[
+"|Triceps|I|||||",
+"|Biceps|I|||||",
+"|Hams|I|||||",
+"|Quads|H|||||",
+"|Quads|H|||||",
+"|Calves|I|||||"
+]
+],
+[
+"Day 3",
+[
+"|Upper Back|H|||||",
+"|Upper Back|H|||||",
+"|Upper Back|H|||||",
+"|Chest|H|||||",
+"|Side Delt|I|||||"
+]
+],
+[
+"Day 4",
+[
+"|Biceps|I|||||",
+"|Triceps|I|||||",
+"|Hams|H|||||",
+"|Glutes|H|||||",
+"|Quads|H|||||",
+"|Calves|I|||||"
+]
+],
+[
+"Day 5",
+[
+"|Chest|H|||||",
+"|Chest|H|||||",
+"|Upper Back|H|||||",
+"|Upper Back|H|||||",
+"|Side Delt|I|||||"
+]
+]
+]
+},
+{
+"id": "t-full-body",
+"group": "tmpl",
+"name": "Full Body Split",
+"note": "Muscle slots only. Choose the exercise for each slot in Plan.",
+"days": [
+[
+"Day 1",
+[
+"|Chest|H|||||",
+"|Chest|I|||||",
+"|Chest|H|||||",
+"|Upper Back|H|||||",
+"|Rear Delt|I|||||",
+"|Abs|I|||||"
+]
+],
+[
+"Day 2",
+[
+"|Hams|I|||||",
+"|Quads|H|||||",
+"|Quads|H|||||",
+"|Glutes|H|||||",
+"|Calves|I|||||"
+]
+],
+[
+"Day 3",
+[
+"|Lats|H|||||",
+"|Lats|H|||||",
+"|Upper Back|H|||||",
+"|Chest|H|||||",
+"|Rear Delt|I|||||",
+"|Abs|I|||||"
+]
+],
+[
+"Day 4",
+[
+"|Hams|H|||||",
+"|Glutes|H|||||",
+"|Quads|H|||||",
+"|Quads|H|||||",
+"|Calves|I|||||"
+]
+],
+[
+"Day 5",
+[
+"|Biceps|I|||||",
+"|Triceps|I|||||",
+"|Front Delt|H|||||",
+"|Upper Back|I|||||",
+"|Lats|H|||||",
+"|Chest|H|||||",
+"|Abs|I|||||"
+]
+]
+]
+},
+{
+"id": "t-hybrid",
+"group": "tmpl",
+"name": "Hybrid",
+"note": "Muscle slots only. Choose the exercise for each slot in Plan.",
+"days": [
+[
+"Day 1",
+[
+"|Chest|H|||||",
+"|Chest|H|||||",
+"|Triceps|I|||||",
+"|Triceps|I|||||",
+"|Biceps|I|||||",
+"|Front Delt|I|||||",
+"|Forearms|I|||||"
+]
+],
+[
+"Day 2",
+[
+"|Chest|H|||||",
+"|Lats|H|||||",
+"|Hams|I|||||",
+"|Quads|H|||||",
+"|Quads|H|||||",
+"|Calves|I|||||",
+"|Abs|I|||||"
+]
+],
+[
+"Day 3",
+[
+"|Upper Back|H|||||",
+"|Upper Back|H|||||",
+"|Biceps|I|||||",
+"|Biceps|I|||||",
+"|Triceps|I|||||",
+"|Rear Delt|I|||||",
+"|Forearms|I|||||"
+]
+],
+[
+"Day 4",
+[
+"|Hams|H|||||",
+"|Hams|H|||||",
+"|Quads|H|||||",
+"|Quads|H|||||",
+"|Calves|I|||||",
+"|Abs|I|||||"
+]
+],
+[
+"Day 5",
+[
+"|Chest|H|||||",
+"|Front Delt|H|||||",
+"|Side Delt|I|||||",
+"|Upper Back|H|||||",
+"|Biceps|I|||||",
+"|Triceps|I|||||",
+"|Forearms|I|||||"
+]
+]
+]
+}
+];
 /* week prescriptions per month: sets/reps/rest(min)/RPE — from the Month 1-3 sheets */
 const PRESC = {
  1:[{sets:3,reps:"6-10",rest:"1-3",rpe:7},{sets:3,reps:"4-8",rest:"1-3",rpe:8},{sets:3,reps:"3-6",rest:"1-3",rpe:9},{sets:2,reps:"1-5",rest:"1-3",rpe:8}],
@@ -384,7 +1325,7 @@ const PRESC = {
  3:[{sets:2,reps:"6-10",rest:"1-3",rpe:7},{sets:2,reps:"4-8",rest:"1-3",rpe:8},{sets:3,reps:"3-6",rest:"1-3",rpe:8},{sets:2,reps:"1-5",rest:"1-3",rpe:7}]
 };
 const WEEK_KIND = ["Strength · HT","Strength · HT","Strength","Power"];
-const SESSIONS = ["A","B","C","D"];
+const SESSIONS = ["A","B","C","D","E"];   // E only appears in the UI once a plan uses it
 const SLOTS = [
  {id:"p0",tier:"PRIM"},{id:"p1",tier:"PRIM"},
  {id:"h0",tier:"HT"},{id:"h1",tier:"HT"},{id:"h2",tier:"HT"},
@@ -441,6 +1382,8 @@ function migrate(){
     }
     state.library=fresh; rebuilt=true;
   }
+  if(!state.plan) state.plan=blankPlan();
+  for(const s of SESSIONS){ if(!state.plan[s]) state.plan[s]={}; for(const m of [1,2,3]){ if(!state.plan[s][m]) state.plan[s][m]={}; for(const sl of SLOTS) if(!state.plan[s][m][sl.id]) state.plan[s][m][sl.id]=defaultSlot(sl.tier); } }
   const LEGACY_REPS={str:"6-8",hyp:"8-12",acc:"12-15"};
   for(const s of SESSIONS) for(const m of [1,2,3]) for(const sl of SLOTS){
     const slot=state.plan&&state.plan[s]&&state.plan[s][m]&&state.plan[s][m][sl.id];
@@ -633,7 +1576,7 @@ function muscleOf(p){ return MUSCLES.includes(p.grp)?p.grp:(p.ex?findGroup(p.ex)
 function weekMuscles(m,w){
   const planned={}, done={};
   for(const s of SESSIONS) for(const sl of SLOTS){
-    const p=slotPlan(s,m,sl.id); if(!p.ex) continue;
+    const p=slotPlan(s,m,sl.id); if(!p.ex&&!MUSCLES.includes(p.grp)) continue;
     const mu=muscleOf(p)||"Other", rl=rowLog(m,w,s,sl.id,false);
     planned[mu]=(planned[mu]||0)+rxFor(s,m,w,sl.id).sets+((rl&&rl.extra)||0);
     if(rl&&rl.sets) for(const x of rl.sets) if(okSet(x)) done[mu]=(done[mu]||0)+1;
@@ -656,14 +1599,14 @@ function blockStats(plan,logs){
   return st;
 }
 function shortDate(iso){ return iso?new Date(iso+"T12:00:00").toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"}):"–"; }
-function progSummary(plan){ return SESSIONS.map(s=>s+" "+SLOTS.filter(sl=>plan[s]&&plan[s][1]&&plan[s][1][sl.id]&&plan[s][1][sl.id].ex).length).join(" · "); }
+function progSummary(plan){ const c=s=>SLOTS.filter(sl=>plan[s]&&plan[s][1]&&plan[s][1][sl.id]&&(plan[s][1][sl.id].ex||MUSCLES.includes(plan[s][1][sl.id].grp))).length; return SESSIONS.filter(s=>s!=="E"||c(s)>0).map(s=>s+" "+c(s)).join(" · "); }
 function archiveBlock(){
   const st=blockStats(state.plan,state.logs); if(!st.sets) return false;
   state.blocks.push({id:state.block.id||uid(),name:state.block.name||"Untitled block",progId:state.block.progId||"",start:state.block.start,end:todayISO(),plan:clone(state.plan),logs:clone(state.logs),summary:st});
   return true;
 }
 function resetForNewBlock(){ state.logs={}; state.pos={m:1,w:1,s:"A"}; entry=null; rest=null; renderDock(); paintRest(); }
-function applyProgramme(pg){ state.plan=clone(pg.plan); migrate(); }
+function applyProgramme(pg){ state.plan=clone(pg.plan); migrate(); ensureLib(state.plan); }
 function saveProgramme(name,plan,markActive){
   const ex=state.programmes.find(x=>x.name.toLowerCase()===name.toLowerCase());
   const rec={id:ex?ex.id:uid(),name,saved:todayISO(),plan:clone(plan)};
@@ -994,7 +1937,7 @@ function trainHTML(){
   <div class="selbar">
     <div class="segrow"><span class="seglbl disp">Month</span><div class="seg" data-pick="m">${[1,2,3].map(x=>`<button aria-pressed="${x===m}" data-v="${x}">${x}</button>`).join("")}</div></div>
     <div class="segrow"><span class="seglbl disp">Week</span><div class="seg" data-pick="w">${[1,2,3,4].map(x=>`<button aria-pressed="${x===w}" data-v="${x}">${x}</button>`).join("")}</div></div>
-    <div class="segrow"><span class="seglbl disp">Session</span><div class="seg" data-pick="s">${SESSIONS.map(x=>{const c=sessionStatus(m,w,x); return `<button aria-pressed="${x===s}" data-v="${x}">${x}${c.pct>=1&&c.total>0?'<span class="dot"></span>':''}</button>`}).join("")}</div></div>
+    <div class="segrow"><span class="seglbl disp">Session</span><div class="seg" data-pick="s">${visSessions().map(x=>{const c=sessionStatus(m,w,x); return `<button aria-pressed="${x===s}" data-v="${x}">${x}${c.pct>=1&&c.total>0?'<span class="dot"></span>':''}</button>`}).join("")}</div></div>
     <div class="weektag"><span>Week ${w} focus: <b class="disp">${WEEK_KIND[w-1]}</b></span></div>
     <div class="progstrip" role="group" aria-label="12-week program progress — tap a segment to jump to that week">${strip}</div>
     <div class="progmeta"><span>Week <b class="num">${wkNum}</b> of 12 · Month ${m}</span><span class="num">${doneS}/${totS||0} sessions done</span></div>
@@ -1132,9 +2075,54 @@ function syncDock(){
   document.body.style.paddingBottom=(h+16)+"px";
 }
 
+
+const TIER_OF={S:"PRIM",H:"HT",I:"SUPP"};
+const BODYWEIGHT=/pull up|chin up|push up|sit up|leg raise|knee raise|inverted row|ab wheel|chest dip/i;
+function presetById(id){ return PRESETS.find(x=>x.id===id); }
+function progById(id){
+  if(!id) return null;
+  if(id.indexOf("preset:")===0){ const q=presetById(id.slice(7)); return q?{id,name:q.name}:null; }
+  return state.programmes.find(x=>x.id===id)||null;
+}
+function slotFromLine(line,P){
+  const [ex,grp,t,reps,sets,jump,style,model]=line.split("|"), tier=TIER_OF[t]||"HT", d=TIER_DEF[tier];
+  const j=jump!==""?parseFloat(jump):(BODYWEIGHT.test(ex)?0:(tier==="SUPP"?1.25:2.5));
+  return {ex,grp,tier,orm:"",reps:reps!==""?String(reps):d.reps,sets:sets!==""?parseInt(sets):"",prog:j,style:style||P.style||"Straight sets",model:model||P.model||"Double progression"};
+}
+function buildPreset(P){
+  const plan=blankPlan();
+  P.days.forEach((day,di)=>day[1].forEach((line,i)=>{ for(const m of [1,2,3]) plan[SESSIONS[di]][m][SLOTS[i].id]=slotFromLine(line,P); }));
+  return plan;
+}
+/* make sure every exercise a plan uses exists in the exercise library (adds only what is missing) */
+function ensureLib(plan){
+  for(const s of SESSIONS) for(const m of [1,2,3]) for(const sl of SLOTS){
+    const p=plan[s]&&plan[s][m]&&plan[s][m][sl.id]; if(!p||!p.ex) continue;
+    if(Object.values(state.library).some(a=>a.some(x=>normName(x)===normName(p.ex)))) continue;
+    const g=MUSCLES.includes(p.grp)?p.grp:"Other"; (state.library[g]=state.library[g]||[]).push(p.ex);
+  }
+}
+function sessPlanned(s){ return SLOTS.some(sl=>[1,2,3].some(m=>{ const p=state.plan[s]&&state.plan[s][m]&&state.plan[s][m][sl.id]; return p&&(p.ex||MUSCLES.includes(p.grp)); })); }
+function visSessions(){ return SESSIONS.filter(s=>s!=="E"||state.showE||sessPlanned("E")||state.pos.s==="E"); }
+function presetCount(P){ return P.days.reduce((a,d)=>a+d[1].filter(l=>l.split("|")[0]).length,0); }
+function presetsHTML(){
+  const open=state.libOpen||{};
+  return `<div class="sect disp">Preset programmes</div>`+PRESET_GROUPS.map(([g,label])=>{
+    const items=PRESETS.filter(x=>x.group===g);
+    const rows=items.map(P=>{
+      const n=presetCount(P), slots=P.days.reduce((a,d)=>a+d[1].length,0);
+      const days=P.days.map((d,i)=>`<div class="pdday"><b>${SESSIONS[i]} · ${esc(d[0])}</b><br>${d[1].map(l=>{ const f=l.split("|"); return esc(f[0]||"("+f[1]+")"); }).join(" · ")}</div>`).join("");
+      return `<details class="pdet"><summary><span class="pgname">${esc(P.name)}</span><span class="pgmeta num">${P.days.length} days · ${n?n+" exercises":slots+" muscle slots"}</span></summary>
+        <div class="pdbody"><p class="hint" style="margin:0 0 6px">${esc(P.note)}</p>${days}
+        <div class="formline" style="margin-top:10px"><button class="btn primary" data-prstart="${P.id}">Start this programme</button></div></div></details>`;
+    }).join("");
+    return `<details class="lacc" data-lk="pg:${g}"${open["pg:"+g]?" open":""}><summary><span>${esc(label)}</span><span class="count num">${items.length}</span></summary><div class="lbody">${rows}</div></details>`;
+  }).join("");
+}
+
 /* ================= PLAN ================= */
 function programmeCardsHTML(){
-  const b=state.block, st=blockStats(state.plan,state.logs), base=state.programmes.find(x=>x.id===b.progId);
+  const b=state.block, st=blockStats(state.plan,state.logs), base=progById(b.progId);
   const list=state.programmes.length
     ? state.programmes.slice().sort((x,y)=>y.saved<x.saved?-1:1).map(pg=>`<div class="pgrow"><div class="pginfo"><div class="pgname">${esc(pg.name)}${pg.id===b.progId?' <span class="chip part">active</span>':""}</div><div class="pgmeta num">${esc(progSummary(pg.plan))} · saved ${esc(shortDate(pg.saved))}</div></div><button class="btn" data-pgstart="${pg.id}">Start</button><button class="btn danger" data-pgdel="${pg.id}" aria-label="Delete ${esc(pg.name)}">✕</button></div>`).join("")
     : `<div class="hint">Nothing saved yet. Build your plan below, then “Save as programme” to reuse it later.</div>`;
@@ -1146,6 +2134,7 @@ function programmeCardsHTML(){
   </div>
   <div class="sect disp">Saved programmes</div>
   <div class="card">${list}</div>
+  ${presetsHTML()}
   <div class="sect disp">Plan</div>`;
 }
 function muscleBars(planned,done,showDone){
@@ -1158,7 +2147,7 @@ function muscleBars(planned,done,showDone){
 function planHTML(){
   const vs=state.volSel||{m:1,w:1};
   let out=programmeCardsHTML();
-  for(const s of SESSIONS){
+  for(const s of visSessions()){
     const open=state.planOpen===s, mm=state.planMonth[s]||1;
     let body="";
     if(open){
@@ -1170,7 +2159,7 @@ function planHTML(){
         const grpSel=`<select data-grp="${k}"><option value="">Any muscle</option>${LIBKEYS().map(g=>`<option value="${esc(g)}" ${g===p.grp?"selected":""}>${esc(g)}</option>`).join("")}</select>`;
         const exSel=`<select data-ex="${k}">${libOptions(p.ex,p.grp)}</select>`;
         const repsIn=`<input class="num" type="text" data-sreps="${k}" value="${esc(p.reps||d.reps)}" placeholder="${d.reps}">`;
-        const setOpts=[["",d.wave?"Auto (wave)":"Auto (3)"]].concat([1,2,3,4,5,6,7,8].map(n=>[String(n),n+(n===1?" set":" sets")]));
+        const setOpts=[["",d.wave?"Auto (wave)":"Auto (3)"]].concat([1,2,3,4,5,6,7,8,9,10,11,12].map(n=>[String(n),n+(n===1?" set":" sets")]));
         const setsSel=`<select data-ssets="${k}">${setOpts.map(([v,l])=>`<option value="${v}" ${String(p.sets||"")===v?"selected":""}>${l}</option>`).join("")}</select>`;
         const styleSel=`<select data-style="${k}">${STYLES.map(x=>`<option ${x===(p.style||"Straight sets")?"selected":""}>${esc(x)}</option>`).join("")}</select>`;
         const modelSel=`<select data-model="${k}">${MODELS.map(x=>`<option ${x[0]===(p.model||"Double progression")?"selected":""}>${esc(x[0])}</option>`).join("")}</select>`;
@@ -1194,16 +2183,17 @@ function planHTML(){
         ${mm===1?`<div class="copybtns"><button class="btn" data-copy="${s}">Copy Month 1 → Months 2 & 3</button></div>`:""}
       </div>`;
     }
-    const filled=SLOTS.filter(sl=>slotPlan(s,1,sl.id).ex).length;
-    out+=`<div class="acc"><button data-acc="${s}" aria-expanded="${open}"><span class="disp" style="font-size:16px">Session ${s}</span><span class="st num">${filled}/7 chosen</span></button>${body}</div>`;
+    const filled=SLOTS.filter(sl=>slotPlan(s,1,sl.id).ex).length, toPick=SLOTS.filter(sl=>{ const q=slotPlan(s,1,sl.id); return !q.ex&&MUSCLES.includes(q.grp); }).length;
+    out+=`<div class="acc"><button data-acc="${s}" aria-expanded="${open}"><span class="disp" style="font-size:16px">Session ${s}</span><span class="st num">${filled}/7 chosen${toPick?" · "+toPick+" to pick":""}</span></button>${body}</div>`;
   }
+  if(!visSessions().includes("E")) out+=`<button class="btn" id="addE" style="width:100%">＋ Add a 5th session (E)</button>`;
   const wm=weekMuscles(vs.m,vs.w);
   out+=`<div class="sect disp">Weekly sets by muscle</div>
   <div class="card">
     <div class="segrow"><span class="seglbl disp">Month</span><div class="seg" data-vsel="m">${[1,2,3].map(x=>`<button aria-pressed="${x===vs.m}" data-v="${x}">${x}</button>`).join("")}</div></div>
     <div class="segrow"><span class="seglbl disp">Week</span><div class="seg" data-vsel="w">${[1,2,3,4].map(x=>`<button aria-pressed="${x===vs.w}" data-v="${x}">${x}</button>`).join("")}</div></div>
     <div style="margin-top:14px">${muscleBars(wm.planned,{},false)}</div>
-    <div class="hint">Planned working sets for that week across all four sessions. The shaded band marks a 10–20 sets per week guide.</div>
+    <div class="hint">Planned working sets for that week across all sessions. The shaded band marks a 10–20 sets per week guide.</div>
   </div>
   <div class="card">
     <div class="disp" style="font-size:15px">1RM Calculator</div>
@@ -1237,10 +2227,11 @@ function progHTML0(){
   for(const k in state.logs){ for(const slot in state.logs[k].rows){ const r=state.logs[k].rows[slot]; if(Array.isArray(r.sets)) for(const x of r.sets) if(okSet(x)) tonnage+=(parseFloat(x.w)||0)*x.r; } }
   let blocks="";
   for(let m=1;m<=3;m++){
-    let g=`<div class="wkgrid"><span></span>${SESSIONS.map(s=>`<span class="hd">${s}</span>`).join("")}`;
+    const vs5=visSessions();
+    let g=`<div class="wkgrid" style="grid-template-columns:34px repeat(${vs5.length},1fr)"><span></span>${vs5.map(s=>`<span class="hd">${s}</span>`).join("")}`;
     for(let w=1;w<=4;w++){
       g+=`<span class="lbl num">W${w}</span>`;
-      for(const s of SESSIONS){
+      for(const s of vs5){
         const st=sessionStatus(m,w,s);
         const cls=st.total>0&&st.pct>=1?"full":(st.doneSets>0?"part":"");
         g+=`<span class="cell ${cls}" title="M${m} W${w} ${s}: ${st.doneSets}/${st.total||0} sets"></span>`;
@@ -1290,7 +2281,7 @@ function muscleSectionHTML(){
   ${heat?`<div class="sect disp">Sets per muscle, all 12 weeks</div><div class="card">${heat}</div>`:""}`;
 }
 function historyHTML(){
-  const b=state.block, cur=blockStats(state.plan,state.logs), base=state.programmes.find(x=>x.id===b.progId);
+  const b=state.block, cur=blockStats(state.plan,state.logs), base=progById(b.progId);
   const mus=st=>Object.entries(st.muscles).sort((x,y)=>y[1]-x[1]).map(([k,v])=>`<span class="chip">${esc(k)} <b class="num">${v}</b></span>`).join(" ");
   const stats=st=>`${st.sets} sets · ${Math.round(st.volume).toLocaleString()} kg · ${st.sessions}/${st.planned} sessions`;
   const active=`<details class="hist" open><summary><b>${esc(b.name)}</b><span class="chip part">active</span><span class="d">${esc(shortDate(b.start))} →</span></summary>
@@ -1458,6 +2449,8 @@ function wireExtra(v){
   const bn=v.querySelector("#blockname"); if(bn) bn.addEventListener("change",()=>{ state.block.name=bn.value.trim()||"Untitled block"; save(); });
   const sp=v.querySelector("#saveprog"); if(sp) sp.addEventListener("click",()=>promptDlg("Name this programme",state.block.name,"Save",n=>{ saveProgramme(n,state.plan,true); render(); }));
   const eb=v.querySelector("#endblock"); if(eb) eb.addEventListener("click",endBlockFlow);
+  v.querySelectorAll("[data-prstart]").forEach(b=>b.addEventListener("click",()=>{ const P=presetById(b.dataset.prstart); startFlow({id:"preset:"+P.id,name:P.name,plan:buildPreset(P)}); }));
+  const addE=v.querySelector("#addE"); if(addE) addE.addEventListener("click",()=>{ state.showE=true; state.planOpen="E"; save(); render(); });
   v.querySelectorAll("[data-pgstart]").forEach(b=>b.addEventListener("click",()=>startFlow(state.programmes.find(x=>x.id===b.dataset.pgstart))));
   v.querySelectorAll("[data-pgdel]").forEach(b=>b.addEventListener("click",()=>{ const pg=state.programmes.find(x=>x.id===b.dataset.pgdel); confirmDlg(`Delete the saved programme “${pg.name}”? Blocks already run from it stay in your history.`,"Delete",()=>{ state.programmes=state.programmes.filter(x=>x.id!==pg.id); if(state.block.progId===pg.id) state.block.progId=""; save(); render(); }); }));
   v.querySelectorAll("[data-pw]").forEach(b=>b.addEventListener("click",()=>{ state.pw=+b.dataset.pw; save(); render(); }));
