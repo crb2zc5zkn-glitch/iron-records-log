@@ -133,6 +133,11 @@ header .sub{color:var(--muted); font-size:13px; margin-top:3px}
 .sprev{font-size:11px; color:var(--muted); text-align:center; white-space:nowrap}
 .fcell{height:40px; min-width:0; border-radius:9px; background:var(--card2); border:1.5px solid transparent; color:var(--ink); font-size:17px; font-weight:600; text-align:center; padding:0}
 .fcell.ph{color:var(--muted); font-weight:500}
+.fcell.dn{color:var(--rpe10)}
+.livenote{margin:8px 0 2px; padding:8px 10px; border-radius:10px; background:var(--card2); font-size:13px; line-height:1.35; color:var(--muted)}
+.livenote b{color:var(--ink)}
+.livenote.up{border-left:3px solid var(--accent-fill); color:var(--ink)}
+.livenote.dn{border-left:3px solid var(--rpe10); color:var(--ink)}
 .fcell.up{color:var(--good)}
 .fcell.rpec{font-size:14px}
 .fcell.rpec.has{color:var(--c); font-weight:800; font-size:17px}
@@ -390,7 +395,7 @@ const LIB_DEFAULT = {
 const OLD_MAP = {"Push":"Chest","Pull":"Upper Back","Hinge":"Hams","Squat":"Quads","Lunge":"Quads","Carry":"Forearms","Accessory":"Biceps","Core":"Abs","Back":"Upper Back","Shoulders":"Front Delt","Arms":"Biceps","Hams & Glutes":"Hams","Carry & Conditioning":"Forearms"};
 const STYLES = ["Straight sets", "Top set + back-offs", "Rest-pause", "Myo-reps", "Ascending pyramid", "Reverse pyramid", "Cluster sets", "Drop-set finisher"];
 const STYLE_DESC = {"Straight sets": "Same load and rep target every set, full rest between sets.", "Top set + back-offs": "One hard top set, then drop the load 8–12% for the volume sets. Progress each tier independently.", "Rest-pause": "Main set near failure, rest 15–25 s, then 1–3 short mini-sets at the same load. Stable machines and isolations only.", "Myo-reps": "Higher-rep activation set near failure, then repeated 3–5-rep mini-sets with 15–20 s rests; stop at the first rep drop.", "Ascending pyramid": "Load rises while reps fall; only the last 1–2 sets should be near target RIR.", "Reverse pyramid": "Heaviest set first after a full warm-up, then strip ~10% per set.", "Cluster sets": "Break the set into 2–5-rep clusters with 15–30 s rests; stays shy of failure, keeps bar speed crisp.", "Drop-set finisher": "Final set only: hit near-failure, strip 20–25% and continue without rest."};
-const MODELS = [["Dynamic double progression", "Each set progresses on its own: when a set reaches the top of its rep range at target RIR, add load on that set only.", "Needs consistent logging and honest RIR calls — which this app does for you."], ["Double progression", "Build reps within the range on all sets, then add load and return to the bottom of the range.", "The first set can sandbag while later sets catch up."], ["Linear load", "Keep sets and reps fixed; add the smallest increment after every successful session.", "Runs out eventually — switch to a rep-based model when it stalls."], ["Total-rep target", "Accumulate a rep total across all sets (including mini-sets), then add load.", "Don’t overspend on set 1 to game the total."], ["RIR autoregulation", "Adjust the day’s load so each set lands in the prescribed RIR window; progress = more reps or load at the same RIR.", "Your RIR judgement must be calibrated."], ["Step loading", "Hold one load for ~3 exposures, then make a bigger jump.", "Conservative if you’re progressing faster than the step."]];
+const MODELS = [["Dynamic double progression", "Each set progresses on its own: when a set reaches the top of its rep range at or under your target RPE (or feels well under it), add load on that set only. During the workout it also advises the next set from the reps and RPE you just logged, and drops the load if a set falls below the range.", "Needs consistent logging and honest RIR calls — which this app does for you."], ["Double progression", "Build reps within the range on all sets, then add load and return to the bottom of the range.", "The first set can sandbag while later sets catch up."], ["Linear load", "Keep sets and reps fixed; add the smallest increment after every successful session.", "Runs out eventually — switch to a rep-based model when it stalls."], ["Total-rep target", "Accumulate a rep total across all sets (including mini-sets), then add load.", "Don’t overspend on set 1 to game the total."], ["RIR autoregulation", "Adjust the day’s load so each set lands in the prescribed RIR window; progress = more reps or load at the same RIR.", "Your RIR judgement must be calibrated."], ["Step loading", "Hold one load for ~3 exposures, then make a bigger jump.", "Conservative if you’re progressing faster than the step."]];
 const GUARDRAILS = ["Use one progression rule per exercise — never add weight, sets, reps and intensity techniques at once.", "Compare like with like: more load or reps only counts at the same technique and similar RIR.", "Rest-pause: cap it at 1–2 exercises per session, on stable machines — never heavy RDLs or free squats.", "Judge trends, not workouts: keep a method 6–8 weeks and at least 3–4 exposures before changing it.", "Stop a set when form changes, the target muscle stops limiting the set, or pain appears."];
 function LIBKEYS(){ return Object.keys(state.library); }
 function findGroup(ex){ for(const g of LIBKEYS()) if(state.library[g].includes(ex)) return g; return ""; }
@@ -1352,7 +1357,7 @@ const TIER_DEF = {
 
 /* ================= state ================= */
 const KEY="bpp5.v1";
-function defaultSlot(tier){ const d=TIER_DEF[tier]; return {ex:"",grp:"",tier,orm:"",reps:d.reps,sets:"",prog:d.prog,style:"Straight sets",model:"Double progression"}; }
+function defaultSlot(tier){ const d=TIER_DEF[tier]; return {ex:"",grp:"",tier,orm:"",reps:d.reps,sets:"",prog:d.prog,style:"Straight sets",model:"Dynamic double progression"}; }
 function blankPlan(){
   const plan={};
   for(const s of SESSIONS){ plan[s]={};
@@ -1414,7 +1419,7 @@ function migrate(){
     if(slot.grp==null) slot.grp=slot.ex?findGroup(slot.ex):"";
     if(rebuilt) slot.grp=slot.ex?(findGroup(slot.ex)||OLD_MAP[slot.grp]||""):(MUSCLES.includes(slot.grp)?slot.grp:(OLD_MAP[slot.grp]||""));
     if(!slot.style) slot.style="Straight sets";
-    if(!slot.model) slot.model="Double progression";
+    if(!slot.model) slot.model="Dynamic double progression";
   }
   // logs used to store one weight per exercise plus a rep count per set; they now hold weight, reps and RPE per set
   for(const k in state.logs){
@@ -1562,6 +1567,49 @@ function styleMult(style,i,n){
   if(style==="Ascending pyramid") return Math.max(0.5,1-0.1*(n-1-i));
   return null;
 }
+/* ---- performance-based advice (dynamic double progression / RIR autoregulation) ----
+   target RPE = the week's RPE for Strength and Hypertrophy slots, 9 for Isolation.
+   verdict d: 1 = add load, 0 = hold, -1 = too heavy. live = judging the next set in the same session (stricter about adding load). */
+const LIVE_MODELS=["Dynamic double progression","RIR autoregulation"];
+function targetRpe(rx){ return rx.showRpe?rx.rpe:9; }
+function verdict(x,range,T,live){
+  const r=x.r, e=parseFloat(x.rpe)||null, lo=range[0], hi=range[1], tag=e!=null?" @ RPE "+fmtKg(e):"";
+  if(live){
+    if(r>=hi&&(e==null||e<=T-1)) return {d:1,why:r+" reps"+tag+(e!=null?", easy":"")};
+    if(e!=null&&r>=lo&&e<=T-2) return {d:1,why:r+" reps"+tag+", easy"};
+    if(r<lo||(e!=null&&e>=T+2&&r<hi)) return {d:-1,why:r+" reps"+tag+", too heavy"};
+  }else{
+    if(r>=hi&&(e==null||e<=T+1)) return {d:1,why:"hit "+hi+" reps"+tag};
+    if(e!=null&&r>=lo&&e<=T-2) return {d:1,why:"RPE "+fmtKg(e)+" is well under "+fmtKg(T)};
+    if(r<lo) return {d:-1,why:r+" reps is below "+lo};
+  }
+  return {d:0,why:r+" reps"+tag};
+}
+function liveOn(p){ return LIVE_MODELS.includes(p.model||"Double progression")&&styleMult(p.style||"Straight sets",0,3)===null; }
+/* advice for the set after set j, from set j as logged in this session */
+function liveNext(m,w,s,slot,j){
+  const p=slotPlan(s,m,slot), rl=rowLog(m,w,s,slot,false), x=rl&&rl.sets&&rl.sets[j];
+  if(!liveOn(p)||!okSet(x)||isNaN(parseFloat(x.w))) return null;
+  const rx=rxFor(s,m,w,slot), v=verdict(x,rangeAt(rx,j),targetRpe(rx),true), W=parseFloat(x.w);
+  return {d:v.d,why:v.why,v:fmtKg(Math.max(0,W+v.d*stepW(p)))};
+}
+function liveNote(m,w,s,slot,n){
+  const p=slotPlan(s,m,slot), rl=rowLog(m,w,s,slot,false); if(!rl||!rl.sets||!liveOn(p)) return "";
+  let j=-1; for(let k=0;k<n;k++) if(okSet(rl.sets[k])) j=k; if(j<0) return "";
+  const a=liveNext(m,w,s,slot,j); if(!a) return "";
+  let txt, cls=a.d>0?"up":(a.d<0?"dn":"");
+  if(j+1<n){
+    txt=`Set ${j+1}: ${a.why}. ${a.d>0?"Try":(a.d<0?"Drop to":"Stay at")} <b>${a.v} kg</b> for set ${j+2}.`;
+  }else{
+    const rx=rxFor(s,m,w,slot), T=targetRpe(rx), inc=stepW(p);
+    const ds=rl.sets.slice(0,n).map((x,i)=>okSet(x)?verdict(x,rangeAt(rx,i),T,false).d:0).map((d,i)=>d<0&&i>0?0:d);
+    const ups=ds.map((d,i)=>d>0?i+1:0).filter(Boolean);
+    if(ups.length){ txt=`Done. ${ups.length===ds.length?"Every set":"Set"+(ups.length>1?"s ":" ")+ups.join(" & ")} earned <b>+${fmtKg(inc)} kg</b> next session.`; cls="up"; }
+    else if(ds[0]<0){ txt=`Done. Set 1 fell below its range, so next session starts <b>${fmtKg(inc)} kg lighter</b>.`; cls="dn"; }
+    else { txt="Done. Hold the weight next session and chase the top of the range at your target RPE."; cls=""; }
+  }
+  return `<div class="livenote ${cls}">${txt}</div>`;
+}
 /* what the slot's progression model says about last session: {up, delta(setIndex)->kg to add, msg} */
 function progressFor(m,w,s,slot){
   const p=slotPlan(s,m,slot), inc=parseFloat(p.prog)||0, model=p.model||"Double progression";
@@ -1574,11 +1622,13 @@ function progressFor(m,w,s,slot){
   const jump="+"+fmtKg(inc)+" kg", kg=v=>fmtKg(v)+" kg";
   let res=null;
   if(model==="Dynamic double progression"){
-    const flags=ls.sets.map((x,i)=>okSet(x)&&x.r>=rg(i)[1]), hit=[]; flags.forEach((f,i)=>{ if(f) hit.push(i+1); });
-    res=hit.length
-      ?{up:true,delta:i=>(i<flags.length?flags[i]:flags[flags.length-1])?inc:0,
-        msg:hit.length===oks.length?`Every set hit ${topTxt} → ${jump}`:`Set${hit.length>1?"s ":" "}${hit.join(" & ")} hit ${topTxt} → ${jump} on ${hit.length>1?"those sets":"that set"} only`}
-      :{up:false,msg:`No set at ${topTxt} yet — same loads, chase reps.`};
+    const T=targetRpe(rx), ds=ls.sets.map((x,i)=>okSet(x)?verdict(x,rg(i),T,false).d:0).map((d,i)=>d<0&&i>0?0:d);
+    const at=i=>ds[Math.min(i,ds.length-1)], ups=ds.map((d,i)=>d>0?i+1:0).filter(Boolean);
+    res=ups.length
+      ?{up:true,delta:i=>at(i)>0?inc:0,msg:`${ups.length===ds.length?"Every set":"Set"+(ups.length>1?"s ":" ")+ups.join(" & ")} earned the jump → ${jump}${ups.length===ds.length?"":" on "+(ups.length>1?"those sets":"that set")+" only"}`}
+      :(ds[0]<0
+        ?{up:false,delta:()=>-inc,msg:`Set 1 fell below ${bot} reps → start ${fmtKg(inc)} kg lighter.`}
+        :{up:false,msg:`No set earned a jump yet — chase ${topTxt} reps at RPE ${fmtKg(T)} or easier, same loads.`});
   }
   else if(model==="Double progression") res=allTop?{up:true,delta:()=>inc,msg:`Every set hit ${topTxt} → ${jump}, restart at ${bot} reps`}:{up:false,msg:`Build reps toward ${topTxt} on every set at the same load.`};
   else if(model==="Linear load") res=allMin?{up:true,delta:()=>inc,msg:`All reps made last time → ${jump}`}:{up:false,msg:"Reps missed last time — repeat the same load."};
@@ -1609,6 +1659,7 @@ function suggestW(m,w,s,slot,i){
   const has=x=>x&&x.w!==""&&x.w!=null&&!isNaN(parseFloat(x.w));
   const shaped=styleMult(style,0,n)!==null, ref=style==="Ascending pyramid"?n-1:0;
   if(!shaped){
+    if(i>0&&rl&&rl.sets){ let j=i-1; while(j>=0&&!okSet(rl.sets[j])) j--; const a=j>=0?liveNext(m,w,s,slot,j):null; if(a) return {v:a.v,up:a.d>0,dn:a.d<0}; }
     if(rl&&rl.sets) for(let j=i-1;j>=0;j--) if(has(rl.sets[j])) return {v:fmtKg(parseFloat(rl.sets[j].w)),up:false};
   }else if(i!==ref&&rl&&rl.sets&&has(rl.sets[ref])){
     return {v:fmtKg(roundW(parseFloat(rl.sets[ref].w)*styleMult(style,i,n)/styleMult(style,ref,n))),up:false};
@@ -1944,7 +1995,7 @@ function trainHTML(){
         <span class="snum num">${i+1}</span>
         <span class="sprev num">${esc(prevText(ls,i))}</span>
         <button class="fcell num${x.r>0?"":" ph"}${act(i,"r")}" data-cell="${sl.id}|${i}|r" aria-label="Set ${i+1} reps">${x.r>0?x.r:top}</button>
-        <button class="fcell num${wEmpty?" ph":""}${(sg&&sg.up)?" up":""}${act(i,"w")}" data-cell="${sl.id}|${i}|w" aria-label="Set ${i+1} weight in kg">${esc(wEmpty?(sg?sg.v:""):x.w)}</button>
+        <button class="fcell num${wEmpty?" ph":""}${(sg&&sg.up)?" up":""}${(sg&&sg.dn)?" dn":""}${act(i,"w")}" data-cell="${sl.id}|${i}|w" aria-label="Set ${i+1} weight in kg">${esc(wEmpty?(sg?sg.v:""):x.w)}</button>
         <button class="fcell rpec num${x.rpe?" has":""}${act(i,"rpe")}" data-cell="${sl.id}|${i}|rpe" ${x.rpe?`style="--c:${rpeVar(x.rpe)}"`:""} aria-label="Set ${i+1} RPE">${x.rpe?fmtKg(x.rpe):"RPE"}</button>
         <button class="scheck ${q}" data-check="${sl.id}|${i}" aria-pressed="${ok}" aria-label="Set ${i+1}: ${ok?"done, "+x.r+" reps":"mark as done"}">${CHECK_SVG}</button>
       </div>`;
@@ -1963,6 +2014,7 @@ function trainHTML(){
         <div class="shead"><span>Set</span><span>Previous</span><span>Reps</span><span>KG</span><span>RPE</span><span></span></div>
         ${rows}
       </div>
+      ${liveNote(m,w,s,sl.id,n)}
       <div class="exfoot"><button class="addset" data-addset="${sl.id}">+ Add set</button>${(rl.extra||0)>0?`<button class="addset rm" data-rmset="${sl.id}">Remove set</button>`:""}</div>
       <input class="rownote" data-note="${sl.id}" value="${esc(rl.note||"")}" placeholder="Notes for this exercise…">
     </section>`;
@@ -2142,7 +2194,7 @@ function progById(id){
 function slotFromLine(line,P){
   const [ex,grp,t,reps,sets,jump,style,model]=line.split("|"), tier=TIER_OF[t]||"HT", d=TIER_DEF[tier];
   const j=jump!==""?parseFloat(jump):(BODYWEIGHT.test(ex)?0:(tier==="SUPP"?1.25:2.5));
-  return {ex,grp,tier,orm:"",reps:reps!==""?String(reps):d.reps,sets:sets!==""?parseInt(sets):"",prog:j,style:style||P.style||"Straight sets",model:model||P.model||"Double progression"};
+  return {ex,grp,tier,orm:"",reps:reps!==""?String(reps):d.reps,sets:sets!==""?parseInt(sets):"",prog:j,style:style||P.style||"Straight sets",model:model||P.model||"Dynamic double progression"};
 }
 function buildPreset(P){
   const plan=blankPlan();
@@ -2189,7 +2241,7 @@ function programmeCardsHTML(){
     <label class="fld" style="margin-top:8px"><span class="fl">Block name</span><input id="blockname" value="${esc(b.name)}"></label>
     <label class="fld" style="margin-top:8px"><span class="fl">Target length</span><select id="blockweeks">${[2,3,4,5,6,7,8,9,10,11,12].map(n=>`<option value="${n}"${n===BW()?" selected":""}>${n} weeks</option>`).join("")}</select></label>
     <div class="hint">Started ${esc(shortDate(b.start))} · ${st.sessions}/${st.planned} sessions done · ${st.sets} sets logged${base?` · from “${esc(base.name)}”`:""}</div>
-    <div class="formline" style="margin-top:10px"><button class="btn primary" id="saveprog">Save plan as programme</button><button class="btn" id="endblock">End block…</button></div>
+    <div class="formline" style="margin-top:10px"><button class="btn primary" id="saveprog">Save plan as programme</button><button class="btn" id="endblock">End block…</button><button class="btn" id="alldyn">Dynamic double on every exercise</button></div>
   </div>
   <div class="sect disp">Saved programmes</div>
   <div class="card">${list}</div>
@@ -2527,6 +2579,7 @@ function wireExtra(v){
   const bn=v.querySelector("#blockname"); if(bn) bn.addEventListener("change",()=>{ state.block.name=bn.value.trim()||"Untitled block"; save(); });
   const sp=v.querySelector("#saveprog"); if(sp) sp.addEventListener("click",()=>promptDlg("Name this programme",state.block.name,"Save",n=>{ saveProgramme(n,state.plan,true,BW()); render(); }));
   const bwk=v.querySelector("#blockweeks"); if(bwk) bwk.addEventListener("change",()=>{ state.block.weeks=+bwk.value; clampPos(); save(); render(); });
+  const ad=v.querySelector("#alldyn"); if(ad) ad.addEventListener("click",()=>{ for(const s of SESSIONS) for(const m of [1,2,3]) for(const sl of SLOTS) state.plan[s][m][sl.id].model="Dynamic double progression"; save(); toast("Every exercise now uses dynamic double progression"); render(); });
   const eb=v.querySelector("#endblock"); if(eb) eb.addEventListener("click",endBlockFlow);
   const prRun=(id,clone)=>{ const P=presetById(id), sel=v.querySelector(`[data-prlen="${id}"]`); startFlow({id:"preset:"+P.id,name:P.name,plan:buildPreset(P)},{weeks:sel?+sel.value:12,clone}); };
   v.querySelectorAll("[data-prstart]").forEach(b=>b.addEventListener("click",()=>prRun(b.dataset.prstart,false)));
