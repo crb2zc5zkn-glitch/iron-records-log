@@ -130,7 +130,26 @@ header .sub{color:var(--muted); font-size:13px; margin-top:3px}
 .srow{padding-top:4px; padding-bottom:4px; border-radius:10px}
 .srow.hi{background:var(--hi-soft)} .srow.mid{background:var(--mid-soft)} .srow.lo{background:var(--lo-soft)}
 .snum{height:40px; display:grid; place-items:center; border-radius:9px; background:var(--card2); color:var(--muted); font-weight:700; font-size:15px}
-.sprev{font-size:11px; color:var(--muted); text-align:center; white-space:nowrap}
+.sprev{font-size:11px; color:var(--muted); text-align:center; white-space:nowrap; line-height:1.15}
+.sprev b{color:var(--accent); font-size:14px; font-weight:800}
+.sprev small{display:block; font-size:10px}
+.ormrow{display:flex; align-items:center; gap:8px; margin-top:10px; padding:8px 10px; border-radius:10px; background:var(--card2); font-size:13px; color:var(--muted)}
+.ormrow.need{background:var(--accent-soft); color:var(--ink)}
+.ormrow b{color:var(--ink)}
+.ormpct{margin-left:auto; font-size:12px}
+.ormrow input{width:84px; height:36px; text-align:center; font-weight:700; font-size:16px; padding:0}
+.pwinfo{grid-column:1/-1; padding:10px 12px; border-radius:10px; background:var(--card2); font-size:13px; line-height:1.4}
+.pwinfo .btn{margin-top:8px}
+.exgrid{display:block}
+@media(min-width:700px){
+  .wrap{max-width:820px}
+  body[data-tab="train"] .wrap, nav .in, #restbar .rrow, #sheet{max-width:1040px}
+  .exgrid{display:grid; grid-template-columns:1fr 1fr; gap:0 14px; align-items:start}
+  .selbar{display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px 14px}
+  .selbar .segrow+.segrow{margin-top:0}
+  .selbar .weektag,.selbar .progstrip,.selbar .progmeta{grid-column:1/-1}
+  .shead,.srow{grid-template-columns:30px minmax(50px,1fr) 56px 70px 54px 44px}
+}
 .fcell{height:40px; min-width:0; border-radius:9px; background:var(--card2); border:1.5px solid transparent; color:var(--ink); font-size:17px; font-weight:600; text-align:center; padding:0}
 .fcell.ph{color:var(--muted); font-weight:500}
 .fcell.dn{color:var(--rpe10)}
@@ -742,12 +761,14 @@ const PRESETS = [
 "id": "531-triumvirate",
 "group": "lifto",
 "name": "5/3/1 Triumvirate",
-"note": "4 days: a main lift plus two assistance lifts. Week-1 (5s) layout. Main lifts use Step loading: hold three weeks, then jump (+2.5 kg press and bench, +5 kg squat and deadlift). Simplified: the weekly percentage waves and training-max maths aren't modelled. You get the lifts, sets and reps; enter your own weights.",
+"cycle": true,
+"weeks": 12,
+"note": "Your Liftosaur Triumvirate: 4 days, a main lift plus two assistance lifts. The main lifts run a 3-week wave as % of your 1RM (5s week, 3s week, 5/3/1 week; the last set is AMRAP, leave 1-2 in reserve) and repeat. Enter your 1RM on each main lift on the Train tab. Every 3 weeks the 1RM goes up 2.5 kg (press, bench) or 5 kg (squat, deadlift).",
 "days": [
 [
 "Press",
 [
-"Overhead Press|Front Delt|S|5|3|1.25|Straight sets|Step loading",
+"Overhead Press|Front Delt|S|5||1.25|Straight sets|Step loading|1x5@58,1x5@67,1x5+@76;1x3@63,1x3@72,1x3+@81;1x5@67,1x3@76,1x1+@85|3:2.5",
 "Chest Dip|Chest|I|15|5|0|Straight sets|Double progression",
 "Scissor pulldown|Lats|H|10|5||Straight sets|Double progression"
 ]
@@ -755,7 +776,7 @@ const PRESETS = [
 [
 "Deadlift",
 [
-"Deadlift|Hams|S|5|3|2.5|Straight sets|Step loading",
+"Deadlift|Hams|S|5||2.5|Straight sets|Step loading|1x5@58,1x5@67,1x5+@76;1x3@63,1x3@72,1x3+@81;1x5@67,1x3@76,1x1+@85|3:5",
 "Back Extension|Erectors|I|12|5||Straight sets|Double progression",
 "Hanging Leg Raise|Abs|I|15|5||Straight sets|Double progression",
 "Swiss Bar Hammer Curl|Biceps|I|10|5||Straight sets|Double progression"
@@ -764,7 +785,7 @@ const PRESETS = [
 [
 "Bench",
 [
-"Bench Press|Chest|S|5|3|1.25|Straight sets|Step loading",
+"Bench Press|Chest|S|5||1.25|Straight sets|Step loading|1x5@58,1x5@67,1x5+@76;1x3@63,1x3@72,1x3+@81;1x5@67,1x3@76,1x1+@85|3:2.5",
 "Incline machine press|Chest|H|15|5||Straight sets|Double progression",
 "Rotary row|Upper Back|H|10|5||Straight sets|Double progression"
 ]
@@ -772,7 +793,7 @@ const PRESETS = [
 [
 "Squat",
 [
-"Belt Squat|Quads|S|5|3|2.5|Straight sets|Step loading",
+"Belt Squat|Quads|S|5||2.5|Straight sets|Step loading|1x5@58,1x5@67,1x5+@76;1x3@63,1x3@72,1x3+@81;1x5@67,1x3@76,1x1+@85|3:5",
 "Leg Press (low + narrow)|Quads|H|15|5|5|Straight sets|Double progression",
 "Seated Leg Curl|Hams|H|10|5||Straight sets|Double progression",
 "EZ Bar Triceps Extension|Triceps|I|10|5||Straight sets|Double progression"
@@ -784,13 +805,14 @@ const PRESETS = [
 "id": "531-monolith",
 "group": "lifto",
 "name": "5/3/1: The Monolith",
-"note": "3 days, week-1 layout of the 6-week program. Simplified: the weekly percentage waves and training-max maths aren't modelled. You get the lifts, sets and reps; enter your own weights.",
+"weeks": 6,
+"note": "Your Liftosaur Monolith, 6 weeks, 3 days. Main lifts follow the weekly percentages of your 1RM (the 5+ set is as many reps as you can, leaving 1-2 in reserve). Enter your 1RM on each lift on the Train tab. After week 3 the 1RM goes up by 5 kg (squat, deadlift) or 2.5 kg (presses). Accessories are rep targets: build up the total reps.",
 "days": [
 [
 "Squat / Press",
 [
-"Belt Squat|Quads|S|5|7|2.5|Straight sets|Step loading",
-"Overhead Press|Front Delt|S|5|4|1.25|Straight sets|Step loading",
+"Belt Squat|Quads|S|5||5|Straight sets|Step loading|1x5@60,1x5@68,5x5@76;1x5@55,1x5@64,5x5@72;1x5@64,1x5@72,5x5@80;1x5@60,1x5@68,5x5@76;1x5@55,1x5@64,5x5@72;1x5@64,1x5@72,5x5@80|3:5",
+"Overhead Press|Front Delt|S|5||2.5|Straight sets|Step loading|1x5@60,1x5@68,1x5@76,1x5+@60;1x5@55,1x5@64,1x5@72,1x5+@55;1x5@64,1x5@72,1x5@80,1x5+@64;1x5@60,1x5@68,1x5@76,1x5+@60;1x5@55,1x5@64,1x5@72,1x5+@55;1x5@64,1x5@72,1x5@80,1x5+@64|3:2.5",
 "Scissor pulldown|Lats|H|20|5||Straight sets|Double progression",
 "Cable Upright Row|Side Delt|I|20|5||Straight sets|Double progression",
 "Chest Dip|Chest|I|30|5|0|Straight sets|Double progression"
@@ -799,8 +821,8 @@ const PRESETS = [
 [
 "Deadlift / Incline",
 [
-"Deadlift|Hams|S|5|5|2.5|Straight sets|Step loading",
-"Incline machine press|Chest|S|5|7|1.25|Straight sets|Step loading",
+"Deadlift|Hams|S|5||5|Straight sets|Step loading|1x5@60,1x5@68,3x5@76;1x5@55,1x5@64,3x5@72;1x5@64,1x5@72,3x5@80;1x5@60,1x5@68,3x5@76;1x5@55,1x5@64,3x5@72;1x5@64,1x5@72,3x5@80|3:5",
+"Incline machine press|Chest|S|5||2.5|Straight sets|Step loading|1x5@60,1x5@68,5x5@76;1x5@55,1x5@64,5x5@72;1x5@64,1x5@72,5x5@80;1x5@60,1x5@68,5x5@76;1x5@55,1x5@64,5x5@72;1x5@64,1x5@72,5x5@80|3:2.5",
 "Rotary row|Upper Back|H|10-20|5||Straight sets|Double progression",
 "Preacher Curl|Biceps|I|20|5||Straight sets|Double progression"
 ]
@@ -808,8 +830,8 @@ const PRESETS = [
 [
 "Squat / Press volume",
 [
-"Belt Squat|Quads|S|5|4|2.5|Straight sets|Step loading",
-"Overhead Press|Front Delt|S|5|10|1.25|Straight sets|Step loading",
+"Belt Squat|Quads|S|5||5|Straight sets|Step loading|1x5@60,1x5@68,1x5@76,1x20@40;1x5@55,1x5@64,1x5@72,1x20@45;1x5@64,1x5@72,1x5@80,1x20@45;1x5@60,1x5@68,1x5@76,1x20@42.5;1x5@55,1x5@64,1x5@72,1x20@55;1x5@64,1x5@72,1x5@80,1x20@60|3:5",
+"Overhead Press|Front Delt|S|5||2.5|Straight sets|Step loading|10x5@60;10x5@42;10x5@64;12x5@51;15x5@55;12x5@64|3:2.5",
 "Scissor pulldown|Lats|H|5|5||Straight sets|Double progression",
 "Cable Upright Row|Side Delt|I|20|5||Straight sets|Double progression",
 "Shrug|Upper Back|I|20|5||Straight sets|Double progression"
@@ -821,24 +843,25 @@ const PRESETS = [
 "id": "5s-pro-fsl",
 "group": "lifto",
 "name": "5s PRO + 5x5 FSL",
-"note": "3 days, one lift each: three 5-rep PRO sets, then 5×5 first-set-last. Shown as 8 sets of 5. Simplified: the weekly percentage waves and training-max maths aren't modelled. You get the lifts, sets and reps; enter your own weights.",
+"weeks": 7,
+"note": "Your Liftosaur 5s PRO + 5x5 FSL: 3 days, one lift each. Three 5-rep PRO sets, then 5x5 first-set-last, as % of your 1RM. Weeks 1-3 build (65/75/85, 70/80/90, 75/85/95), weeks 4-6 repeat with a higher 1RM, week 7 is a deload (40/50/60). Enter your 1RM for each lift on the Train tab.",
 "days": [
 [
 "Squat",
 [
-"Back Squat|Quads|S|5|8|2.5|Straight sets|Step loading"
+"Back Squat|Quads|S|5||2.5|Straight sets|Step loading|1x5@65,1x5@75,1x5@85,5x5@65;1x5@70,1x5@80,1x5@90,5x5@70;1x5@75,1x5@85,1x5@95,5x5@75;1x5@65,1x5@75,1x5@85,5x5@65;1x5@70,1x5@80,1x5@90,5x5@70;1x5@75,1x5@85,1x5@95,5x5@75;1x5@40,1x5@50,1x5@60|3:2.5"
 ]
 ],
 [
 "Bench Press",
 [
-"Bench Press|Chest|S|5|8|1.25|Straight sets|Step loading"
+"Bench Press|Chest|S|5||1.25|Straight sets|Step loading|1x5@65,1x5@75,1x5@85,5x5@65;1x5@70,1x5@80,1x5@90,5x5@70;1x5@75,1x5@85,1x5@95,5x5@75;1x5@65,1x5@75,1x5@85,5x5@65;1x5@70,1x5@80,1x5@90,5x5@70;1x5@75,1x5@85,1x5@95,5x5@75;1x5@40,1x5@50,1x5@60|3:1.25"
 ]
 ],
 [
 "Deadlift",
 [
-"Deadlift|Hams|S|5|8|2.5|Straight sets|Step loading"
+"Deadlift|Hams|S|5||2.5|Straight sets|Step loading|1x5@65,1x5@75,1x5@85,5x5@65;1x5@70,1x5@80,1x5@90,5x5@70;1x5@75,1x5@85,1x5@95,5x5@75;1x5@65,1x5@75,1x5@85,5x5@65;1x5@70,1x5@80,1x5@90,5x5@70;1x5@75,1x5@85,1x5@95,5x5@75;1x5@40,1x5@50,1x5@60|3:2.5"
 ]
 ]
 ]
@@ -846,14 +869,15 @@ const PRESETS = [
 {
 "id": "gg-bbb",
 "group": "lifto",
+"cycle": true,
 "name": "GG-BBB",
-"note": "4 days: a heavy top set (3–6 reps, then singles and doubles), Boring But Big 4×10, then two accessory lifts at 3 sets of 8–15. Simplified: the weekly percentage waves and training-max maths aren't modelled. You get the lifts, sets and reps; enter your own weights.",
+"note": "4 days: a heavy top set (3–6 reps, then singles and doubles), Boring But Big 4×10, then two accessory lifts at 3 sets of 8–15. The top set is 85% of your 1RM (enter it on the Train tab); the back-off singles and doubles are shown as 4 sets and you can add or remove sets. Boring But Big is 50% of that lift's 1RM.",
 "days": [
 [
 "OHP",
 [
-"Overhead Press|Front Delt|S|3-6|5|1.25|Straight sets|Linear load",
-"Close Grip Bench Press|Chest|H|10|4|2|Straight sets|Double progression",
+"Overhead Press|Front Delt|S|3-6||1.25|Straight sets|Linear load|1x3-6@85,4x1-2@85",
+"Close Grip Bench Press|Chest|H|10||2|Straight sets|Double progression|3x10@50,1x10+@50",
 "Chin Up|Lats|I|8-15|3|0|Straight sets|Double progression",
 "Skullcrusher|Triceps|I|8-15|3|2|Straight sets|Double progression"
 ]
@@ -861,8 +885,8 @@ const PRESETS = [
 [
 "Deadlift",
 [
-"Deadlift|Hams|S|3-6|5|2.5|Straight sets|Linear load",
-"Leg Press (low + narrow)|Quads|H|10|4|5|Straight sets|Double progression",
+"Deadlift|Hams|S|3-6||2.5|Straight sets|Linear load|1x3-6@85,4x1-2@85",
+"Leg Press (low + narrow)|Quads|H|10||5|Straight sets|Double progression|3x10@50,1x10+@50",
 "Hammer Curl (Arm Machine)|Biceps|I|8-15|3|2|Straight sets|Double progression",
 "Hanging Leg Raise|Abs|I|8-15|3|0|Straight sets|Double progression"
 ]
@@ -870,8 +894,8 @@ const PRESETS = [
 [
 "Bench",
 [
-"Bench Press|Chest|S|3-6|5|1.25|Straight sets|Linear load",
-"Overhead Press|Front Delt|H|10|4|2|Straight sets|Double progression",
+"Bench Press|Chest|S|3-6||1.25|Straight sets|Linear load|1x3-6@85,4x1-2@85",
+"Overhead Press|Front Delt|H|10||2|Straight sets|Double progression|3x10@50,1x10+@50",
 "Overhead cable extension|Triceps|I|8-15|3|2|Straight sets|Double progression",
 "Hammer Curl|Biceps|I|8-15|3|2|Straight sets|Double progression"
 ]
@@ -879,8 +903,8 @@ const PRESETS = [
 [
 "Squat",
 [
-"Back Squat|Quads|S|3-6|5|2.5|Straight sets|Linear load",
-"Romanian deadlift|Hams|H|10|4|5|Straight sets|Double progression",
+"Back Squat|Quads|S|3-6||2.5|Straight sets|Linear load|1x3-6@85,4x1-2@85",
+"Romanian deadlift|Hams|H|10||5|Straight sets|Double progression|3x10@50,1x10+@50",
 "Pull Up|Lats|I|8-15|3|0|Straight sets|Double progression",
 "Ab Wheel Rollout|Abs|I|8-15|3|0|Straight sets|Double progression"
 ]
@@ -1465,8 +1489,29 @@ function setAt(m,w,s,slot,i,make){
 function okSet(x){ return !!(x&&x.ok&&x.r>0); }
 function fmtKg(n){ return String(Math.round(n*100)/100); }
 function slotPlan(sess,m,slot){ return state.plan[sess][m][slot]; }
+/* percentage prescriptions: p.pw = one row per week, a row = [{r:"5"|"5+"|"3-6", p:percent of 1RM}, ...] (+ = as many reps as you can).
+   p.pwCycle repeats the rows; p.bump (kg) is added to the 1RM every p.every weeks. The 1RM is stored per exercise on the block (state.block.orm). */
+function parsePw(str){
+  return String(str).split(";").map(wk=>{ const out=[];
+    wk.split(",").forEach(t=>{ const m=t.trim().match(/^(?:(\d+)x)?([\d-]+\+?)@([\d.]+)$/); if(!m) return; for(let k=0;k<+(m[1]||1);k++) out.push({r:m[2],p:+m[3]}); });
+    return out; });
+}
+function absWeek(m,w){ return (m-1)*4+w; }
+function pwRow(p,abs){
+  if(!p||!Array.isArray(p.pw)||!p.pw.length) return null;
+  const L=p.pw.length, row=p.pw[p.pwCycle?((abs-1)%L):(abs-1)];
+  return row&&row.length?row:null;
+}
+function ormOf(p){ const o=state.block&&state.block.orm; const v=o&&p.ex?parseFloat(o[normName(p.ex)]):NaN; return v>0?v:null; }
+function pctW(p,abs,pct){
+  const o=ormOf(p); if(o==null) return null;
+  const b=(p.bump>0&&p.every>0)?Math.floor((abs-1)/p.every)*p.bump:0;
+  return Math.round((o+b)*pct/100/2.5)*2.5;
+}
 function rxFor(sess,m,w,slot,plan){
   const p=(plan||state.plan)[sess][m][slot], d=TIER_DEF[p.tier]||TIER_DEF.PRIM, base=PRESC[m][w-1];
+  const prow=pwRow(p,absWeek(m,w));
+  if(prow){ const sr=prow.map(x=>x.r), u=[...new Set(sr)]; return {sets:prow.length, sr, reps:u.join(" / "), rpe:null, rest:"3-5", showRpe:false, pct:prow.map(x=>x.p)}; }
   const fixed=parseInt(p.sets), n=fixed>0 ? fixed : (d.wave ? base.sets : 3), sr=setReps(p,n), u=[...new Set(sr)];
   return {
     sets: n,
@@ -1585,7 +1630,7 @@ function verdict(x,range,T,live){
   }
   return {d:0,why:r+" reps"+tag};
 }
-function liveOn(p){ return LIVE_MODELS.includes(p.model||"Double progression")&&styleMult(p.style||"Straight sets",0,3)===null; }
+function liveOn(p){ return !(p.pw&&p.pw.length)&&LIVE_MODELS.includes(p.model||"Double progression")&&styleMult(p.style||"Straight sets",0,3)===null; }
 /* advice for the set after set j, from set j as logged in this session */
 function liveNext(m,w,s,slot,j){
   const p=slotPlan(s,m,slot), rl=rowLog(m,w,s,slot,false), x=rl&&rl.sets&&rl.sets[j];
@@ -1613,6 +1658,7 @@ function liveNote(m,w,s,slot,n){
 /* what the slot's progression model says about last session: {up, delta(setIndex)->kg to add, msg} */
 function progressFor(m,w,s,slot){
   const p=slotPlan(s,m,slot), inc=parseFloat(p.prog)||0, model=p.model||"Double progression";
+  if(pwRow(p,absWeek(m,w))) return {delta:()=>0,up:false,msg:""};
   const hist=prevSessions(m,w,s,slot,p.ex,3), none={delta:()=>0,up:false,msg:""};
   if(!hist.length) return none;
   const ls=hist[0], rx=ls.rx, rg=i=>rangeAt(rx,i), oks=ls.oks, full=oks.length>=rx.sets;
@@ -1655,6 +1701,7 @@ function progressFor(m,w,s,slot){
 /* weight to pre-fill for a set, shaped by the slot's set style (top set + back-offs, pyramids) */
 function suggestW(m,w,s,slot,i){
   const p=slotPlan(s,m,slot), rx=rxFor(s,m,w,slot), rl=rowLog(m,w,s,slot,false);
+  if(rx.pct){ const v=pctW(p,absWeek(m,w),rx.pct[Math.min(i,rx.pct.length-1)]); return v==null?null:{v:fmtKg(v),up:false}; }
   const n=rx.sets+((rl&&rl.extra)||0), style=p.style||"Straight sets";
   const has=x=>x&&x.w!==""&&x.w!=null&&!isNaN(parseFloat(x.w));
   const shaped=styleMult(style,0,n)!==null, ref=style==="Ascending pyramid"?n-1:0;
@@ -1723,7 +1770,7 @@ function startFlow(pg,opt){
   const use=()=>opt.clone?saveProgramme(pg.name+" (copy)",pg.plan,false,weeks):pg;
   const done=()=>{ clampPos(); state.tab=opt.clone?"plan":"train"; if(opt.clone) state.planOpen="A"; };
   choiceDlg(`${opt.clone?"Clone":"Start"} “${pg.name}” for ${weeks} weeks? `+(opt.clone?"You get your own editable copy under Saved programmes. ":"")+(st.sets?`Your current block “${state.block.name}” (${st.sets} sets logged) will be archived to Programme history.`:"Your current plan will be replaced."),[
-    {label:opt.clone?"Clone as new block":"Start new block",primary:true,fn:()=>{ archiveBlock(); const g=use(); applyProgramme(g); state.block={id:uid(),name:opt.clone?g.name:pg.name,progId:g.id,start:todayISO(),weeks}; resetForNewBlock(); done(); save(); toast((opt.clone?"Cloned “":"Started “")+pg.name+"”"); render(); }},
+    {label:opt.clone?"Clone as new block":"Start new block",primary:true,fn:()=>{ archiveBlock(); const g=use(); applyProgramme(g); state.block={id:uid(),name:opt.clone?g.name:pg.name,progId:g.id,start:todayISO(),weeks,orm:Object.assign({},state.block.orm)}; resetForNewBlock(); done(); save(); toast((opt.clone?"Cloned “":"Started “")+pg.name+"”"); render(); }},
     {label:"Replace plan only (keep logs)",fn:()=>{ const g=use(); applyProgramme(g); state.block.progId=g.id; state.block.weeks=weeks; done(); save(); toast("Plan replaced"); render(); }}
   ]);
 }
@@ -1757,7 +1804,7 @@ document.querySelectorAll("nav [data-tab]").forEach(b=>b.addEventListener("click
 function render(){
   document.querySelectorAll("nav [data-tab]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.tab===state.tab)));
   $("#who").textContent = state.name ? state.name : "personal log";
-  const v=$("#view");
+  const v=$("#view"); document.body.dataset.tab=state.tab;
   if(state.tab==="train") v.innerHTML=trainHTML();
   else if(state.tab==="plan") v.innerHTML=planHTML();
   else if(state.tab==="prog") v.innerHTML=progHTML();
@@ -1960,7 +2007,7 @@ const DOWN_SVG='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stro
 const RPE_VALUES=[5,6,7,8,9,10];
 const REST_OPTS=[[60,"1m"],[90,"1m 30s"],[120,"2m"],[150,"2m 30s"],[180,"3m"],[240,"4m"]];
 const REST_DEF={PRIM:120,HT:90,SUPP:60};
-function restOf(p){ return +p.rest||REST_DEF[p.tier]||90; }
+function restOf(p){ return +p.rest||((p.pw&&p.pw.length)?180:0)||REST_DEF[p.tier]||90; }
 function stepW(p){ const j=parseFloat(p.prog); return j>0?j:2.5; }
 function rpeVar(v){ return "var(--rpe"+Math.min(10,Math.max(5,Math.round(v)))+")"; }
 function fmtDur(ms){ const t=Math.max(0,Math.floor(ms/1000)), h=Math.floor(t/3600), mi=Math.floor(t%3600/60), se=t%60; return h?h+"h "+mi+"m":(mi?mi+"m "+String(se).padStart(2,"0")+"s":se+"s"); }
@@ -1984,6 +2031,11 @@ function trainHTML(){
     let rows="";
     const pr=progressFor(m,w,s,sl.id);
     let hint="";
+    const pwOn=!!rx.pct, orm=ormOf(p);
+    if(pwOn){
+      const abs=absWeek(m,w), lo=Math.min(...rx.pct), hi=Math.max(...rx.pct), bmp=(p.bump>0&&p.every>0)?Math.floor((abs-1)/p.every)*p.bump:0;
+      hint=`<div class="ormrow${orm==null?" need":""}"><span>${orm==null?"Your 1RM":"1RM"}</span><input class="num" inputmode="decimal" data-orm="${sl.id}" value="${orm==null?"":fmtKg(orm)}" placeholder="kg" aria-label="1RM for ${esc(p.ex)}"><span>kg${bmp?` <b>+${fmtKg(bmp)}</b>`:""}</span><span class="ormpct num">${fmtKg(lo)}${hi>lo?"–"+fmtKg(hi):""}% this week</span></div>`;
+    }
     if(pr.msg) hint=pr.up?`<button class="hintbtn" data-usesug="${sl.id}">↑ ${esc(pr.msg)} · <b>Use suggested weights</b></button>`:`<div class="modelnote">${esc(pr.msg)}</div>`;
     if(p.style&&p.style!=="Straight sets") hint=`<div class="modelnote"><b>${esc(p.style)}</b> — ${esc(STYLE_DESC[p.style]||"")}</div>`+hint;
     for(let i=0;i<n;i++){
@@ -1993,8 +2045,8 @@ function trainHTML(){
       const [bot,top]=rangeAt(rx,i), q=ok?(x.r>=top?"hi":(x.r<=bot?"lo":"mid")):"";
       rows+=`<div class="srow ${q}">
         <span class="snum num">${i+1}</span>
-        <span class="sprev num">${esc(prevText(ls,i))}</span>
-        <button class="fcell num${x.r>0?"":" ph"}${act(i,"r")}" data-cell="${sl.id}|${i}|r" aria-label="Set ${i+1} reps">${x.r>0?x.r:top}</button>
+        <span class="sprev num">${rx.pct?`<b>${fmtKg(rx.pct[Math.min(i,rx.pct.length-1)])}%</b>${ls?`<small>${esc(prevText(ls,i))}</small>`:""}`:esc(prevText(ls,i))}</span>
+        <button class="fcell num${x.r>0?"":" ph"}${act(i,"r")}" data-cell="${sl.id}|${i}|r" aria-label="Set ${i+1} reps">${x.r>0?x.r:(/\+/.test(repAt(rx,i))?repAt(rx,i):top)}</button>
         <button class="fcell num${wEmpty?" ph":""}${(sg&&sg.up)?" up":""}${(sg&&sg.dn)?" dn":""}${act(i,"w")}" data-cell="${sl.id}|${i}|w" aria-label="Set ${i+1} weight in kg">${esc(wEmpty?(sg?sg.v:""):x.w)}</button>
         <button class="fcell rpec num${x.rpe?" has":""}${act(i,"rpe")}" data-cell="${sl.id}|${i}|rpe" ${x.rpe?`style="--c:${rpeVar(x.rpe)}"`:""} aria-label="Set ${i+1} RPE">${x.rpe?fmtKg(x.rpe):"RPE"}</button>
         <button class="scheck ${q}" data-check="${sl.id}|${i}" aria-pressed="${ok}" aria-label="Set ${i+1}: ${ok?"done, "+x.r+" reps":"mark as done"}">${CHECK_SVG}</button>
@@ -2005,7 +2057,7 @@ function trainHTML(){
         <div class="exinfo">
           <div class="tier ${p.tier} disp"><span class="plate"></span>${TIER_NAME[p.tier]}${p.grp?" · "+esc(p.grp):""}</div>
           <div class="exname">${esc(p.ex)}</div>
-          <div class="rx num">${rx.sets} × ${esc(rx.reps)} reps${rx.showRpe?" · RPE <b>"+rx.rpe+"</b>":""}</div>
+          <div class="rx num">${rx.sets} × ${esc(rx.reps)} reps${rx.showRpe?" · RPE <b>"+rx.rpe+"</b>":""}${rx.pct?" · % of 1RM":""}</div>
         </div>
         <label class="restchip">${TIMER_SVG}<select data-rest="${sl.id}" aria-label="Rest timer for ${esc(p.ex)}">${REST_OPTS.map(([v,l])=>`<option value="${v}" ${v===restOf(p)?"selected":""}>${l}</option>`).join("")}</select></label>
       </div>
@@ -2036,7 +2088,7 @@ function trainHTML(){
       <button class="finish${fin?" is-fin":""}" data-finish aria-label="${fin?"Session finished — tap to reopen":"Finish session"}">${fin?"Finished ✓":"Finish"}</button>
     </div>`;
   const body = cards
-    ? `${sum}${cards}
+    ? `${sum}<div class="exgrid">${cards}</div>
       <div class="datefoot"><span>Trained</span><input type="date" data-date value="${esc(L&&L.date||"")}"></div>
       <p class="hint">Tap ✓ to log a set at the top of the rep range with your suggested weight, or tap Reps, KG or RPE to enter what you actually did. Row colour shows the reps: green = top of the range, amber = middle, red = bottom or below. Hit the top on every set and the app suggests your weight jump next time.</p>`
     : `<div class="card emptycard">Nothing planned yet for <b>Session ${s}</b> in Month ${m}.<br>Pick its exercises once in the Plan tab and they'll appear here every week.<br><button class="btn primary" data-goplan="${s}">Open Plan</button></div>`;
@@ -2192,9 +2244,11 @@ function progById(id){
   return state.programmes.find(x=>x.id===id)||null;
 }
 function slotFromLine(line,P){
-  const [ex,grp,t,reps,sets,jump,style,model]=line.split("|"), tier=TIER_OF[t]||"HT", d=TIER_DEF[tier];
+  const [ex,grp,t,reps,sets,jump,style,model,pct,bump]=line.split("|"), tier=TIER_OF[t]||"HT", d=TIER_DEF[tier];
   const j=jump!==""?parseFloat(jump):(BODYWEIGHT.test(ex)?0:(tier==="SUPP"?1.25:2.5));
-  return {ex,grp,tier,orm:"",reps:reps!==""?String(reps):d.reps,sets:sets!==""?parseInt(sets):"",prog:j,style:style||P.style||"Straight sets",model:model||P.model||"Dynamic double progression"};
+  const slot={ex,grp,tier,orm:"",reps:reps!==""?String(reps):d.reps,sets:sets!==""?parseInt(sets):"",prog:j,style:style||P.style||"Straight sets",model:model||P.model||"Dynamic double progression"};
+  if(pct){ slot.pw=parsePw(pct); slot.pwCycle=!!P.cycle; if(bump){ const [ev,kg]=bump.split(":"); slot.every=+ev; slot.bump=+kg; } slot.rest=180; }
+  return slot;
 }
 function buildPreset(P){
   const plan=blankPlan();
@@ -2286,13 +2340,16 @@ function planHTML(){
         const styleSel=`<select data-style="${k}" data-old="${esc(p.style||"Straight sets")}">${STYLES.map(x=>`<option ${x===(p.style||"Straight sets")?"selected":""}>${esc(x)}</option>`).join("")}</select>`;
         const modelSel=`<select data-model="${k}">${MODELS.map(x=>`<option ${x[0]===(p.model||"Double progression")?"selected":""}>${esc(x[0])}</option>`).join("")}</select>`;
         const progSel=`<select data-prog="${k}">${[[0,"None"],[1,"+1 kg"],[1.25,"+1.25 kg"],[2,"+2 kg"],[2.5,"+2.5 kg"],[5,"+5 kg"]].map(([v,l])=>`<option value="${v}" ${+(p.prog||0)===v?"selected":""}>${l}</option>`).join("")}</select>`;
+        const isPw=!!(p.pw&&p.pw.length), pr1=isPw?p.pw[0]:null;
+        const pwTxt=isPw?p.pw.map((r,wi)=>"W"+(wi+1)+" "+[...new Set(r.map(x=>fmtKg(x.p)))].join("/")+"%").join(" · "):"";
         rows+=`<div class="planslot">
           <div class="slothead tier ${p.tier} disp"><span class="plate"></span>Exercise ${i+1}</div>
           <div class="fields">
             ${fld("Muscle",grpSel,"m5")}${fld("Exercise",exSel,"m7")}
-            ${fld("Sets",setsSel,"m4")}${fld("Set style",styleSel,"m8")}
+            ${isPw?`<div class="pwinfo"><b>Percentage plan</b> (% of your 1RM, entered on the Train tab)<br><span class="num">${esc(pwTxt)}</span>${p.pwCycle?", repeating":""}${p.bump>0?`; 1RM +${fmtKg(p.bump)} kg every ${p.every} weeks`:""}. Sets, reps and weights follow this table.<br><button class="btn" data-pwoff="${k}">Switch to manual sets and reps</button></div>`
+            :`${fld("Sets",setsSel,"m4")}${fld("Set style",styleSel,"m8")}
             <div class="fld wide"><span class="fl">Reps per set</span><div class="srs">${repIns}</div>${(p.style&&STYLE_TIP[p.style])?`<div class="styletip">${esc(STYLE_TIP[p.style])}</div>`:""}</div>
-            ${fld("Progression",modelSel,"m8")}${fld("Weight jump",progSel,"m4")}
+            ${fld("Progression",modelSel,"m8")}${fld("Weight jump",progSel,"m4")}`}
           </div>
         </div>`;
       });
@@ -2629,6 +2686,12 @@ function wire(){
     }));
     v.querySelectorAll("[data-rest]").forEach(sel=>sel.addEventListener("change",()=>{ slotPlan(s,m,sel.dataset.rest).rest=+sel.value; save(); }));
     v.querySelectorAll("[data-note]").forEach(inp=>inp.addEventListener("change",()=>{ rowLog(m,w,s,inp.dataset.note,true).note=inp.value; save(); }));
+    v.querySelectorAll("[data-orm]").forEach(inp=>inp.addEventListener("change",()=>{
+      const p=slotPlan(s,m,inp.dataset.orm), val=parseFloat(String(inp.value).replace(",","."));
+      if(!state.block.orm) state.block.orm={};
+      if(val>0) state.block.orm[normName(p.ex)]=val; else delete state.block.orm[normName(p.ex)];
+      save(); rerender();
+    }));
     const fin=v.querySelector("[data-finish]");
     if(fin) fin.addEventListener("click",()=>{
       const L=getLog(m,w,s,true);
@@ -2638,6 +2701,12 @@ function wire(){
     const d=v.querySelector("[data-date]"); if(d) d.addEventListener("change",()=>{ getLog(m,w,s,true).date=d.value; save(); });
   }
   if(state.tab==="plan"){
+    v.querySelectorAll("[data-pwoff]").forEach(b=>b.addEventListener("click",()=>{
+      const [ss,mm,sid]=b.dataset.pwoff.split("|"), q=state.plan[ss][+mm][sid];
+      const row=q.pw&&q.pw[0]; delete q.pw; delete q.pwCycle; delete q.bump; delete q.every;
+      if(row){ q.sets=row.length; q.sr=row.map(x=>x.r.replace("+","")); q.reps=q.sr[0]; }
+      save(); rerender();
+    }));
     v.querySelectorAll("[data-acc]").forEach(b=>b.addEventListener("click",()=>{ state.planOpen=state.planOpen===b.dataset.acc?"":b.dataset.acc; save(); render(); }));
     v.querySelectorAll("[data-pmonth]").forEach(b=>b.addEventListener("click",()=>{ const [s,mth]=b.dataset.pmonth.split("|"); state.planMonth[s]=+mth; save(); render(); }));
     v.querySelectorAll("[data-grp]").forEach(sel=>sel.addEventListener("change",()=>{
