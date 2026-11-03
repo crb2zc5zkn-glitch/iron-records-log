@@ -1861,6 +1861,7 @@ function mergeDocs(L,R){
   out.library=cp(base.library); out.name=base.name||L.name||R.name||"";
   if(L.block.id===R.block.id){
     out.block=cp(base.block); out.plan=cp(base.plan); out.logs={};
+    { const other=base===L?R:L; if(other.block.orm||base.block.orm) out.block.orm=Object.assign({},other.block.orm,base.block.orm); }   // 1RMs: keep ones only the other device has
     for(const k of new Set([...Object.keys(L.logs||{}),...Object.keys(R.logs||{})])){
       const a=(L.logs||{})[k], b=(R.logs||{})[k], ta=(L.sm.logs||{})[k]||0, tb=(R.sm.logs||{})[k]||0;
       out.logs[k]=cp((!b||(a&&ta>=tb))?a:b); sm.logs[k]=Math.max(ta,tb);
