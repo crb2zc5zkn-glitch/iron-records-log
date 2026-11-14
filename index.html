@@ -399,18 +399,19 @@ dialog::backdrop{background:rgba(10,10,14,.5)}
 'use strict';
 /* ================= program template (from the Aquilina Big Picture 5-Day workbook) ================= */
 const MUSCLES = ["Chest", "Lats", "Upper Back", "Front Delt", "Side Delt", "Rear Delt", "Biceps", "Triceps", "Forearms", "Quads", "Hams", "Glutes", "Adductors", "Calves", "Abs", "Erectors"];
+const NO_DB=/dumbbell|\bDBs?\b/i;
 const LIB_DEFAULT = {
- "Chest":["Bench Press", "Chest Cable Fly", "Decline Bench Press", "Decline Dumbbell Bench Press", "Decline Plate Loaded Chest Press", "Dumbbell Bench Press", "Incline Bench Press", "Incline Dumbbell Bench Press", "Incline Plate Loaded Press", "Pin Loaded Chest Fly", "Pin Loaded Chest Press", "Plate Loaded Chest Press", "Smith Machine Bench Press", "Single Arm Dumbbell Bench Press", "Incline Swiss-bar press", "Incline machine press", "Converging chest press", "Machine fly / pec deck", "Weighted dip"],
+ "Chest":["Bench Press", "Chest Cable Fly", "Decline Bench Press", "Decline Plate Loaded Chest Press", "Incline Bench Press", "Incline Plate Loaded Press", "Pin Loaded Chest Fly", "Pin Loaded Chest Press", "Plate Loaded Chest Press", "Smith Machine Bench Press", "Incline Swiss-bar press", "Incline machine press", "Converging chest press", "Machine fly / pec deck", "Weighted dip"],
  "Lats":["Assisted Pull Up", "Chin Up", "Half Kneeling Lat Pulldown", "Lat Pulldown", "Neutral Grip Pulldown", "Pin Loaded Lat Pulldown", "Plate Loaded Lat Pulldown", "Pull Up", "Straight Arm Pulldown", "Supinated Pulldown", "Wide Neutral Grip Pulldown", "Scissor pulldown", "Weighted chin-up"],
- "Upper Back":["Barbell Row", "Bent Over Dumbbell Row", "Chest Supported Barbell Row", "Chest Supported Dumbbell Row", "Chest Supported T-Bar Row", "Dumbbell Row", "Half Kneeling Cable Row", "Landmine Row", "Pendlay Row", "Pin Loaded Row", "Plate Loaded Row", "Seated Neutral Grip Cable Row", "Shrug", "Single Arm Cable Row", "Single Arm Plate Loaded Row", "T-Bar Row", "Chest-supported row", "Rotary row", "Cable row", "Reverse pec deck (mid-trap)"],
- "Front Delt":["Dumbbell Press", "Dumbbell Push Press", "Front Raise", "Push Press", "Seated Dumbbell Press", "Seated Press", "Single Arm Dumbbell Press", "Single Arm Dumbbell Push Press", "Smith Machine Press", "Overhead Carry", "Waiter Carry", "Swiss-bar military press", "Machine shoulder press", "Arnold press"],
- "Side Delt":["Lateral Raise", "Cable lateral raise", "Machine lateral raise", "DB lateral raise"],
+ "Upper Back":["Barbell Row", "Chest Supported Barbell Row", "Chest Supported T-Bar Row", "Half Kneeling Cable Row", "Landmine Row", "Pendlay Row", "Pin Loaded Row", "Plate Loaded Row", "Seated Neutral Grip Cable Row", "Shrug", "Single Arm Cable Row", "Single Arm Plate Loaded Row", "T-Bar Row", "Chest-supported row", "Rotary row", "Cable row", "Reverse pec deck (mid-trap)"],
+ "Front Delt":["Front Raise", "Push Press", "Seated Press", "Smith Machine Press", "Overhead Carry", "Waiter Carry", "Swiss-bar military press", "Machine shoulder press", "Arnold press"],
+ "Side Delt":["Lateral Raise", "Cable lateral raise", "Machine lateral raise"],
  "Rear Delt":["Band Pull Apart", "Face Pull", "Rear Delt Fly", "Reverse pec deck", "Cable reverse fly", "Rear-delt row"],
- "Biceps":["Barbell Curl", "Cable Curl", "Dumbbell Curl", "Hammer Curl", "Preacher Curl", "Bayesian cable curl", "Incline DB curl"],
+ "Biceps":["Barbell Curl", "Cable Curl", "Hammer Curl", "Preacher Curl", "Bayesian cable curl"],
  "Triceps":["Overhead Tricep Extension", "Skullcrusher", "Tricep Pushdown", "Cable pressdown", "Overhead cable extension", "Machine dip"],
  "Forearms":["Wrist Curl", "Farmer Carry", "Suitcase Carry", "Trap Bar Carry", "Reverse curl"],
  "Quads":["Back Squat", "Belt Squat", "Box Squat", "Bulgarian Split Squat", "Dual Kettlebell Front Squat", "Forward Lunge", "Front Squat", "Goblet Squat", "Hack Squat", "Landmine Squat", "Lateral Lunge", "Leg Extension", "Leg Press", "Pin Loaded Squat", "Reverse Lunge", "Safety Bar Squat", "Smith Machine Squat", "Split Squat", "Walking Lunge", "Zercher Squat", "Sled Push", "Sled Drag", "Smith squat"],
- "Hams":["Deadlift", "Dual Dumbbell Deadlift", "Dual Kettlebell Deadlift", "Barbell Romanian Deadlift", "Barbell Stiff Leg Deadlift", "Dumbbell Romanian Deadlift", "Glute Bridge Leg Curl", "Hip Hinge", "Hip Hinge Single Leg", "Kettlebell Romanian Deadlift", "Leg Curl", "Nordic Curl", "Seated Leg Curl", "Single Dumbbell Deadlift", "Single Leg Romanian Deadlift", "Trap Bar Deadlift", "Lying leg curl", "Romanian deadlift"],
+ "Hams":["Deadlift", "Dual Kettlebell Deadlift", "Barbell Romanian Deadlift", "Barbell Stiff Leg Deadlift", "Glute Bridge Leg Curl", "Hip Hinge", "Hip Hinge Single Leg", "Kettlebell Romanian Deadlift", "Leg Curl", "Nordic Curl", "Seated Leg Curl", "Single Leg Romanian Deadlift", "Trap Bar Deadlift", "Lying leg curl", "Romanian deadlift"],
  "Glutes":["Banded Pull Through", "Barbell Hip Thrust", "Cable Pull Through", "Hip Abduction", "Kettlebell Swing", "Reverse Hyper", "Single Leg Hip Thrust", "Sumo Deadlift", "45° hyperextension", "Hip thrust", "RDL (glute bias)"],
  "Adductors":["Hip Adduction", "Copenhagen Plank", "Adductor machine"],
  "Calves":["Calf Raise", "Seated Calf Raise", "Leg-press calf raise", "Standing calf raise"],
@@ -450,8 +451,8 @@ const PRESETS = [
 [
 "Back Squat|Quads|H|10-15|2|||",
 "Good Morning|Hams|H|10-15|2|||",
-"Dumbbell Skullcrusher|Triceps|I|10-15|2|||",
-"Dumbbell Curl|Biceps|I|10-15|2|||"
+"|Triceps|I|10-15|2|||",
+"|Biceps|I|10-15|2|||"
 ]
 ],
 [
@@ -460,7 +461,7 @@ const PRESETS = [
 "Pull Up|Lats|H|5-30|2|||",
 "Assisted Pull Up|Lats|H|10-15|2|||",
 "Bench Press|Chest|H|10-15|2|||",
-"Incline Dumbbell Bench Press|Chest|H|10-15|2|||",
+"|Chest|H|10-15|2|||",
 "Cable Upright Row|Side Delt|I|10-15|2|||"
 ]
 ],
@@ -496,8 +497,8 @@ const PRESETS = [
 [
 "Incline Bench Press|Chest|H|10-15|2|||",
 "Chest Cable Fly|Chest|I|10-15|2|||",
-"DB lateral raise|Side Delt|I|10-15|2|||",
-"Dumbbell Upright Row|Side Delt|I|10-15|2|||",
+"|Side Delt|I|10-15|2|||",
+"|Side Delt|I|10-15|2|||",
 "Seated Row (Machine)|Upper Back|H|10-15|2|||"
 ]
 ],
@@ -506,8 +507,8 @@ const PRESETS = [
 [
 "Back Squat|Quads|H|10-15|2|||",
 "Good Morning|Hams|H|10-15|2|||",
-"Dumbbell Skullcrusher|Triceps|I|10-15|2|||",
-"Dumbbell Curl|Biceps|I|10-15|2|||"
+"|Triceps|I|10-15|2|||",
+"|Biceps|I|10-15|2|||"
 ]
 ],
 [
@@ -516,7 +517,7 @@ const PRESETS = [
 "Pull Up|Lats|H|5-30|2|||",
 "Assisted Pull Up|Lats|H|10-15|2|||",
 "Bench Press|Chest|H|10-15|2|||",
-"Incline Dumbbell Bench Press|Chest|H|10-15|2|||",
+"|Chest|H|10-15|2|||",
 "Cable Upright Row|Side Delt|I|10-15|2|||"
 ]
 ],
@@ -552,8 +553,8 @@ const PRESETS = [
 [
 "Barbell Row|Upper Back|H|10-15|2|||",
 "Chin Up|Lats|H|10-15|2|||",
-"DB lateral raise|Side Delt|I|10-15|2|||",
-"Dumbbell Curl|Biceps|I|10-15|2|||",
+"|Side Delt|I|10-15|2|||",
+"|Biceps|I|10-15|2|||",
 "EZ Bar Triceps Extension|Triceps|I|10-15|2|||"
 ]
 ],
@@ -562,7 +563,7 @@ const PRESETS = [
 [
 "Back Squat|Quads|H|10-15|2|||",
 "Good Morning|Hams|H|10-15|2|||",
-"Incline Dumbbell Bench Press|Chest|H|10-15|2|||",
+"|Chest|H|10-15|2|||",
 "Decline Sit Up|Abs|I|10-15|2|||"
 ]
 ],
@@ -581,8 +582,8 @@ const PRESETS = [
 [
 "Plate Loaded Chest Press|Chest|H|10-15|2|||",
 "Hanging Leg Raise|Abs|I|10-15|2|||",
-"Dumbbell Lunge|Quads|H|10-15|2|||",
-"Dumbbell Stiff Leg Deadlift|Hams|H|10-15|2|||"
+"|Quads|H|10-15|2|||",
+"|Hams|H|10-15|2|||"
 ]
 ],
 [
@@ -591,8 +592,8 @@ const PRESETS = [
 "Pull Up|Lats|H|10-15|2|||",
 "Inverted Row|Upper Back|H|10-15|2|||",
 "Cable Curl|Biceps|I|10-15|2|||",
-"Incline DB curl|Biceps|I|10-15|2|||",
-"Dumbbell Skullcrusher|Triceps|I|10-15|2|||",
+"|Biceps|I|10-15|2|||",
+"|Triceps|I|10-15|2|||",
 "Overhead cable extension|Triceps|I|10-15|2|||",
 "Cable Upright Row|Side Delt|I|10-15|2|||"
 ]
@@ -610,8 +611,8 @@ const PRESETS = [
 [
 "Barbell Row|Upper Back|H|10-15|2|||",
 "Chin Up|Lats|H|10-15|2|||",
-"DB lateral raise|Side Delt|I|10-15|2|||",
-"Dumbbell Curl|Biceps|I|10-15|2|||",
+"|Side Delt|I|10-15|2|||",
+"|Biceps|I|10-15|2|||",
 "EZ Bar Triceps Extension|Triceps|I|10-15|2|||"
 ]
 ],
@@ -620,7 +621,7 @@ const PRESETS = [
 [
 "Back Squat|Quads|H|10-15|2|||",
 "Good Morning|Hams|H|10-15|2|||",
-"Incline Dumbbell Bench Press|Chest|H|10-15|2|||",
+"|Chest|H|10-15|2|||",
 "Decline Sit Up|Abs|I|10-15|2|||"
 ]
 ],
@@ -639,8 +640,8 @@ const PRESETS = [
 [
 "Plate Loaded Chest Press|Chest|H|10-15|2|||",
 "Hanging Leg Raise|Abs|I|10-15|2|||",
-"Dumbbell Lunge|Quads|H|10-15|2|||",
-"Dumbbell Stiff Leg Deadlift|Hams|H|10-15|2|||"
+"|Quads|H|10-15|2|||",
+"|Hams|H|10-15|2|||"
 ]
 ],
 [
@@ -649,8 +650,8 @@ const PRESETS = [
 "Pull Up|Lats|H|10-15|2|||",
 "Inverted Row|Upper Back|H|10-15|2|||",
 "Cable Curl|Biceps|I|10-15|2|||",
-"Incline DB curl|Biceps|I|10-15|2|||",
-"Dumbbell Skullcrusher|Triceps|I|10-15|2|||",
+"|Biceps|I|10-15|2|||",
+"|Triceps|I|10-15|2|||",
 "Overhead cable extension|Triceps|I|10-15|2|||",
 "Cable Upright Row|Side Delt|I|10-15|2|||"
 ]
@@ -669,14 +670,14 @@ const PRESETS = [
 "Barbell Row|Upper Back|H|10-15|2|||",
 "Assisted Pull Up|Lats|H|10-15|2|||",
 "Incline Bench Press|Chest|H|10-15|2|||",
-"Dumbbell Bench Press|Chest|H|10-15|2|||",
+"|Chest|H|10-15|2|||",
 "Face Pull|Rear Delt|I|5-30|2|||"
 ]
 ],
 [
 "Arms & Legs",
 [
-"Lying Dumbbell Curl|Biceps|I|10-15|2|||",
+"|Biceps|I|10-15|2|||",
 "Skullcrusher|Triceps|I|10-15|2|||",
 "Close Grip Bench Press|Chest|H|10-15|2|||",
 "Lying leg curl|Hams|H|10-15|2|||",
@@ -687,7 +688,7 @@ const PRESETS = [
 "Chest, Delts & Back",
 [
 "Bench Press|Chest|H|10-15|2|||",
-"Incline Dumbbell Bench Press|Chest|H|10-15|2|||",
+"|Chest|H|10-15|2|||",
 "Cable Upright Row|Side Delt|I|10-15|2|||",
 "Seated Row (Machine)|Upper Back|H|10-15|2|||",
 "Seated Neutral Grip Cable Row|Upper Back|H|10-15|2|||"
@@ -706,7 +707,7 @@ const PRESETS = [
 [
 "Delts, Back & Chest",
 [
-"Dumbbell Upright Row|Side Delt|I|10-15|2|||",
+"|Side Delt|I|10-15|2|||",
 "Chin Up|Lats|H|10-15|2|||",
 "Barbell Row|Upper Back|H|10-15|2|||",
 "Plate Loaded Chest Press|Chest|H|10-15|2|||",
@@ -1428,6 +1429,7 @@ function migrate(){
     }
     state.library=fresh; rebuilt=true;
   }
+  if(state.library) for(const k in state.library) state.library[k]=state.library[k].filter(e=>!NO_DB.test(e));
   if(!state.plan) state.plan=blankPlan();
   for(const s of SESSIONS){ if(!state.plan[s]) state.plan[s]={}; for(const m of [1,2,3]){ if(!state.plan[s][m]) state.plan[s][m]={}; for(const sl of SLOTS) if(!state.plan[s][m][sl.id]) state.plan[s][m][sl.id]=defaultSlot(sl.tier); } }
   const LEGACY_REPS={str:"6-8",hyp:"8-12",acc:"12-15"};
@@ -2301,7 +2303,7 @@ function buildPreset(P){
 /* make sure every exercise a plan uses exists in the exercise library (adds only what is missing) */
 function ensureLib(plan){
   for(const s of SESSIONS) for(const m of [1,2,3]) for(const sl of SLOTS){
-    const p=plan[s]&&plan[s][m]&&plan[s][m][sl.id]; if(!p||!p.ex) continue;
+    const p=plan[s]&&plan[s][m]&&plan[s][m][sl.id]; if(!p||!p.ex||NO_DB.test(p.ex)) continue;
     if(Object.values(state.library).some(a=>a.some(x=>normName(x)===normName(p.ex)))) continue;
     const g=MUSCLES.includes(p.grp)?p.grp:"Other"; (state.library[g]=state.library[g]||[]).push(p.ex);
   }
@@ -2611,6 +2613,12 @@ function dataHTML(){
       <label class="btn" for="impfile">Import from file…</label><input type="file" id="impfile" accept=".json,application/json" hidden></div>
     ${storageOK?"":`<p class="hint" style="color:var(--prim)">⚠︎ This browser is blocking storage — data will not persist. Try opening the artifact in a regular browser tab.</p>`}
   </div>
+  <div class="sect disp">Import 1RMs</div>
+  <div class="card">
+    <p style="font-size:14px">Paste one exercise per line, like <b>Squat 106</b> (kg). They go into this block's 1RMs, and sync with everything else.</p>
+    <textarea id="ormbox" placeholder="Squat 106&#10;Bench Press 71"></textarea>
+    <div class="formline"><button class="btn primary" id="ormimport">Import 1RMs</button></div>
+  </div>
   <div class="sect disp">Danger zone</div>
   <div class="card">
     <button class="btn danger" id="reset">Erase all data on this device</button>
@@ -2784,6 +2792,14 @@ function wire(){
     if(ts) ts.addEventListener("change",()=>{ state.trendEx=ts.value; save(); render(); });
   }
   if(state.tab==="data"){
+    $("#ormimport").addEventListener("click",()=>{
+      const ALIAS={"squat":["Back Squat"],"romaniandeadlift":["Barbell Romanian Deadlift"],"bentoverrow":["Barbell Row"],"legpress":["Leg Press Low & Close","Leg Press High & Wide","Leg Press - Iron Records"],"overheadpress":["Overhead Press","Military Press"]};
+      if(!state.block.orm) state.block.orm={}; let n=0;
+      $("#ormbox").value.split(/\n/).forEach(line=>{ const m=line.trim().match(/^(.*?)[\s:=,\t]+(\d+(?:[.,]\d+)?)\s*(?:kg)?$/i); if(!m) return; const nm=m[1].trim(), kg=parseFloat(m[2].replace(",",".")); if(!nm||!(kg>0)) return;
+        [nm].concat(ALIAS[normName(nm)]||[]).forEach(x=>{ state.block.orm[normName(x)]=kg; }); n++; });
+      if(!n){ toast("Nothing recognised — use one line per exercise, like: Squat 106"); return; }
+      $("#ormbox").value=""; save(); toast(n+" one rep maxes imported");
+    });
     $("#setname").addEventListener("change",e=>{ state.name=e.target.value.trim(); save(); $("#who").textContent=state.name||"personal log"; });
     $("#copydata").addEventListener("click",async()=>{
       const json=JSON.stringify(state);
