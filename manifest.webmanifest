@@ -1,6 +1,6 @@
 {
-  "name": "Iron Records",
-  "short_name": "Iron Records",
+  "name": "Iron Records Log",
+  "short_name": "Iron Records Log",
   "description": "12-week training log: plan, log sets, track progress.",
   "start_url": "./",
   "scope": "./",

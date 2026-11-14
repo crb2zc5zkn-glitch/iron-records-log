@@ -1,6 +1,6 @@
 /* Offline support. Online: always fetch the newest files (so updates appear on the next open).
    Offline or on a slow connection (3 s): fall back to the saved copy. Logged workouts live in localStorage, not here. */
-const V = "iron-records-v3";
+const V = "iron-records-v4";
 const ASSETS = ["./", "index.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png", "fonts/barlow-condensed-600.woff2", "fonts/barlow-condensed-700.woff2", "fonts/barlow-condensed-800.woff2", "fonts/inter-var.woff2"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(V).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => {
