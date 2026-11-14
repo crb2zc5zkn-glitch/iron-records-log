@@ -2273,10 +2273,8 @@ function visSessions(){ return SESSIONS.filter(s=>s!=="E"||state.showE||sessPlan
 function presetCount(P){ return P.days.reduce((a,d)=>a+d[1].filter(l=>l.split("|")[0]).length,0); }
 const lenOpts=sel=>[2,3,4,5,6,7,8,9,10,11,12].map(n=>`<option value="${n}"${n===sel?" selected":""}>${n} wks</option>`).join("");
 function presetsHTML(){
-  const open=state.libOpen||{};
-  return `<div class="sect disp">Preset programmes</div>`+PRESET_GROUPS.map(([g,label])=>{
-    const items=PRESETS.filter(x=>x.group===g);
-    const rows=items.map(P=>{
+  const items=PRESETS.slice().sort((x,y)=>x.name.localeCompare(y.name,undefined,{numeric:true}));
+  const rows=items.map(P=>{
       const n=presetCount(P), slots=P.days.reduce((a,d)=>a+d[1].length,0);
       const days=P.days.map((d,i)=>`<div class="pdday"><b>${SESSIONS[i]} · ${esc(d[0])}</b><br>${d[1].map(l=>{ const f=l.split("|"); return esc(f[0]||"("+f[1]+")"); }).join(" · ")}</div>`).join("");
       return `<details class="pdet"><summary><span class="pgname">${esc(P.name)}</span><span class="pgmeta num">${P.days.length} days · ${n?n+" exercises":slots+" muscle slots"}</span></summary>
@@ -2284,9 +2282,8 @@ function presetsHTML(){
         <div class="formline" style="margin-top:10px"><label class="lenlbl">Length <select class="lensel" data-prlen="${P.id}">${lenOpts(P.weeks||12)}</select></label></div>
         <div class="formline"><button class="btn primary" data-prstart="${P.id}">Start programme</button><button class="btn" data-prclone="${P.id}">Clone programme</button></div>
         <div class="hint">Start runs it as is. Clone keeps your own editable copy under Saved programmes and opens Plan so you can change it. You can edit the plan after either.</div></div></details>`;
-    }).join("");
-    return `<details class="lacc" data-lk="pg:${g}"${open["pg:"+g]?" open":""}><summary><span>${esc(label)}</span><span class="count num">${items.length}</span></summary><div class="lbody">${rows}</div></details>`;
   }).join("");
+  return `<div class="sect disp">Preset programmes</div><div class="lacc"><div class="lbody">${rows}</div></div>`;
 }
 
 /* ================= PLAN ================= */
