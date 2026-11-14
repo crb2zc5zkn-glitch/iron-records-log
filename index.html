@@ -9,26 +9,30 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<meta name="theme-color" content="#ECEDEB" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#131417" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F1F4F1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#090D0E" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Iron Records">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>
+@font-face{font-family:"Barlow Condensed"; font-style:normal; font-weight:600; font-display:swap; src:url(fonts/barlow-condensed-600.woff2) format("woff2")}
+@font-face{font-family:"Barlow Condensed"; font-style:normal; font-weight:700; font-display:swap; src:url(fonts/barlow-condensed-700.woff2) format("woff2")}
+@font-face{font-family:"Barlow Condensed"; font-style:normal; font-weight:800; font-display:swap; src:url(fonts/barlow-condensed-800.woff2) format("woff2")}
+@font-face{font-family:"Inter"; font-style:normal; font-weight:400 700; font-display:swap; src:url(fonts/inter-var.woff2) format("woff2")}
 :root{
-  --bg:#ECEDEB; --card:#FFFFFF; --card2:#F5F6F4; --ink:#191B1E; --muted:#5C6167;
-  --line:#D8DAD6; --accent:#A87B10; --accent-fill:#D9A521; --accent-soft:#F3E8C8;
+  --bg:#F1F4F1; --card:#FFFFFF; --card2:#E8EDEA; --ink:#090D0E; --muted:#596462;
+  --line:#D3DAD6; --accent:#0B7F76; --accent-fill:#34D6C4; --accent-soft:#D4F1EC;
   --good:#2E7D4F; --good-soft:#DDEEE4; --on-good:#FFFFFF; --on-bad:#FFFFFF;
   --prim:#C5352B; --ht:#2B5EC5; --supp:#2E8B57;
   --hi-soft:#E3F1E8; --mid-soft:#F7EBCB; --lo-soft:#F6DCD8; --on-rpe:#FFFFFF;
   --rpe5:#2E8B57; --rpe6:#6F9A2E; --rpe7:#A88B12; --rpe8:#D9791A; --rpe9:#D4502A; --rpe10:#C5352B;
-  --shadow:0 1px 2px rgba(20,22,25,.06),0 4px 14px rgba(20,22,25,.05);
+  --shadow:0 1px 2px rgba(9,13,14,.06),0 4px 14px rgba(9,13,14,.05);
 }
 @media (prefers-color-scheme: dark){
   :root{
-    --bg:#131417; --card:#1C1E22; --card2:#22252A; --ink:#ECEDEB; --muted:#9AA0A6;
-    --line:#2C2F35; --accent:#E8B93A; --accent-fill:#C79A1B; --accent-soft:#33302270;
+    --bg:#090D0E; --card:#111719; --card2:#172024; --ink:#F7F9F8; --muted:#9BA7A5;
+    --line:#243033; --accent:#34D6C4; --accent-fill:#34D6C4; --accent-soft:#34D6C42E;
     --good:#4FAF7C; --good-soft:#1E3A2C; --on-good:#0F2418; --on-bad:#2A0E0B;
     --prim:#E0554A; --ht:#6B93E8; --supp:#4FAF7C;
   --hi-soft:#1E3A2C; --mid-soft:#3A311A; --lo-soft:#3E1F1C; --on-rpe:#15171A;
@@ -37,17 +41,17 @@
   }
 }
 :root[data-theme="light"]{
-  --bg:#ECEDEB; --card:#FFFFFF; --card2:#F5F6F4; --ink:#191B1E; --muted:#5C6167;
-  --line:#D8DAD6; --accent:#A87B10; --accent-fill:#D9A521; --accent-soft:#F3E8C8;
+  --bg:#F1F4F1; --card:#FFFFFF; --card2:#E8EDEA; --ink:#090D0E; --muted:#596462;
+  --line:#D3DAD6; --accent:#0B7F76; --accent-fill:#34D6C4; --accent-soft:#D4F1EC;
   --good:#2E7D4F; --good-soft:#DDEEE4; --on-good:#FFFFFF; --on-bad:#FFFFFF;
   --prim:#C5352B; --ht:#2B5EC5; --supp:#2E8B57;
   --hi-soft:#E3F1E8; --mid-soft:#F7EBCB; --lo-soft:#F6DCD8; --on-rpe:#FFFFFF;
   --rpe5:#2E8B57; --rpe6:#6F9A2E; --rpe7:#A88B12; --rpe8:#D9791A; --rpe9:#D4502A; --rpe10:#C5352B;
-  --shadow:0 1px 2px rgba(20,22,25,.06),0 4px 14px rgba(20,22,25,.05);
+  --shadow:0 1px 2px rgba(9,13,14,.06),0 4px 14px rgba(9,13,14,.05);
 }
 :root[data-theme="dark"]{
-  --bg:#131417; --card:#1C1E22; --card2:#22252A; --ink:#ECEDEB; --muted:#9AA0A6;
-  --line:#2C2F35; --accent:#E8B93A; --accent-fill:#C79A1B; --accent-soft:#33302270;
+  --bg:#090D0E; --card:#111719; --card2:#172024; --ink:#F7F9F8; --muted:#9BA7A5;
+  --line:#243033; --accent:#34D6C4; --accent-fill:#34D6C4; --accent-soft:#34D6C42E;
   --good:#4FAF7C; --good-soft:#1E3A2C; --on-good:#0F2418; --on-bad:#2A0E0B;
   --prim:#E0554A; --ht:#6B93E8; --supp:#4FAF7C;
   --hi-soft:#1E3A2C; --mid-soft:#3A311A; --lo-soft:#3E1F1C; --on-rpe:#15171A;
@@ -57,11 +61,11 @@
 *{box-sizing:border-box; margin:0}
 html,body{background:var(--bg); color:var(--ink)}
 body{
-  font:16px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font:16px/1.45 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   padding-bottom:calc(76px + env(safe-area-inset-bottom));
   -webkit-text-size-adjust:100%;
 }
-.disp{font-family:"Avenir Next Condensed","Arial Narrow","Helvetica Neue",-apple-system,sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.04em}
+.disp{font-family:"Barlow Condensed","Avenir Next Condensed","Arial Narrow","Helvetica Neue",-apple-system,sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.04em}
 .num{font-family:ui-monospace,"SF Mono",Menlo,monospace; font-variant-numeric:tabular-nums}
 .wrap{max-width:700px; margin:0 auto; padding:0 14px}
 [hidden]{display:none !important}
@@ -163,7 +167,7 @@ header .sub{color:var(--muted); font-size:13px; margin-top:3px}
 .fcell.act{border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-soft)}
 .scheck{height:40px; border-radius:9px; background:var(--card2); color:var(--muted); display:grid; place-items:center}
 .scheck.hi{background:var(--good); color:var(--on-good)}
-.scheck.mid{background:var(--accent-fill); color:#17130A}
+.scheck.mid{background:var(--accent-fill); color:#090D0E}
 .scheck.lo{background:var(--prim); color:var(--on-bad)}
 .exfoot{display:flex; gap:8px; margin-top:6px}
 .addset{flex:1; padding:10px; border-radius:10px; background:var(--card2); font-weight:700; font-size:14px; color:var(--muted)}
@@ -203,7 +207,7 @@ header .sub{color:var(--muted); font-size:13px; margin-top:3px}
 .fld select.t-SUPP{color:var(--supp); font-weight:700}
 .copybtns{display:flex; gap:8px; margin-top:8px}
 .btn{background:var(--card2); border:1px solid var(--line); border-radius:9px; padding:8px 13px; font-size:14px; font-weight:600}
-.btn.primary{background:var(--accent-fill); border-color:var(--accent-fill); color:#17130A}
+.btn.primary{background:var(--accent-fill); border-color:var(--accent-fill); color:#090D0E}
 .btn.danger{color:var(--prim); border-color:var(--prim)}
 .formline{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:8px 0}
 .formline label{font-size:13px; color:var(--muted)}
@@ -272,7 +276,7 @@ nav button svg{width:22px; height:22px}
 .keys button:active{filter:brightness(.93)}
 .keys .alt{font-size:16px; font-weight:700}
 .keys .nextk{background:var(--ink); color:var(--bg)}
-.keys .donek{background:var(--accent-fill); color:#17130A}
+.keys .donek{background:var(--accent-fill); color:#090D0E}
 .rhelp{padding:4px 6px 6px}
 .rhelp p{font-size:14px; color:var(--muted); margin-bottom:8px}
 .rhelp ul{list-style:none; padding:0; display:flex; flex-direction:column; gap:6px; margin-bottom:12px}
@@ -320,7 +324,7 @@ table.heat th.m{text-align:right; padding-right:6px; white-space:nowrap; font-si
 table.heat td{min-width:26px; height:26px; text-align:center; border-radius:5px; background:var(--card2); color:var(--muted)}
 table.heat td.h1{background:var(--accent-soft); color:var(--accent)}
 table.heat td.h2{background:var(--accent-soft); color:var(--accent); font-weight:700}
-table.heat td.h3{background:var(--accent-fill); color:#17130A; font-weight:700}
+table.heat td.h3{background:var(--accent-fill); color:#090D0E; font-weight:700}
 table.heat td.h4{background:var(--accent); color:var(--bg); font-weight:700}
 @supports (background: color-mix(in srgb, red 10%, white)){ table.heat td.h2,.legend .sw.h2{background:color-mix(in srgb,var(--accent-fill) 55%,var(--card2))} }
 table.heat td.cur{outline:2px solid var(--ink); outline-offset:-2px}
