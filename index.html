@@ -367,6 +367,30 @@ dialog::backdrop{background:rgba(10,10,14,.5)}
 .drow{display:flex; gap:8px} .drow .btn{flex:1}
 .dcol{display:flex; flex-direction:column; gap:8px}
 .dinput{width:100%; font-size:16px}
+
+.calstats .stat{min-width:90px; padding:8px 10px}
+.calwrap{margin-top:12px}
+.calmon{display:grid; gap:2px; font-size:10px; color:var(--muted); height:14px}
+.calgrid{display:grid; grid-template-rows:repeat(7,auto); grid-auto-flow:column; gap:2px}
+.cd{aspect-ratio:1; border-radius:3px; background:var(--card2)}
+.cd.l1{background:var(--accent-fill); opacity:.4} .cd.l2{background:var(--accent-fill); opacity:.7} .cd.l3{background:var(--accent-fill)}
+.cd.fut{visibility:hidden} .cd.now{outline:1.5px solid var(--ink); outline-offset:0}
+.legend .sw.cl1{background:var(--accent-fill); opacity:.4} .legend .sw.cl2{background:var(--accent-fill); opacity:.7} .legend .sw.cl3{background:var(--accent-fill)}
+.mapchips{grid-template-columns:repeat(5,1fr)}
+.mapwrap{display:flex; justify-content:center; gap:12px; margin:12px 0 4px}
+.mapwrap figure{margin:0; flex:1; max-width:210px; text-align:center}
+.mapwrap svg{width:100%; height:auto; display:block}
+.mapwrap figcaption{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-top:2px}
+.mbase *{fill:var(--card2); stroke:var(--line); stroke-width:1}
+.ml *{fill:var(--card2); stroke:var(--bg); stroke-width:1.5}
+.ml.l1 *{fill:var(--accent-fill); fill-opacity:.3} .ml.l2 *{fill:var(--accent-fill); fill-opacity:.55} .ml.l3 *{fill:var(--accent-fill); fill-opacity:.8} .ml.l4 *{fill:var(--accent-fill); fill-opacity:1}
+.legend .sw.ml1{background:var(--accent-fill); opacity:.3} .legend .sw.ml2{background:var(--accent-fill); opacity:.55} .legend .sw.ml3{background:var(--accent-fill); opacity:.8} .legend .sw.ml4{background:var(--accent-fill)}
+.mlist{display:grid; grid-template-columns:1fr; gap:6px 18px; margin-top:12px}
+@media(min-width:700px){ .mlist{grid-template-columns:1fr 1fr} }
+.mrow{display:grid; grid-template-columns:90px 1fr 38px; align-items:center; gap:8px; font-size:13px}
+.mrow b{text-align:right}
+.mbar{height:8px; border-radius:4px; background:var(--card2); overflow:hidden}
+.mbar i{display:block; height:100%; background:var(--accent-fill); border-radius:4px}
 </style>
 </head>
 <body>
@@ -2517,7 +2541,98 @@ function historyHTML(){
     <div class="formline"><button class="btn" data-blksave="${bl.id}">Save its plan as programme</button><button class="btn danger" data-blkdel="${bl.id}">Delete</button></div></div></details>`).join("");
   return `<div class="sect disp">Programme history</div><div class="card">${active}${past||'<div class="hint" style="margin-top:8px">Finished blocks appear here with their dates, volume and sets per muscle. End a block from the Plan tab.</div>'}</div>`;
 }
-function progHTML(){ return progHTML0()+muscleSectionHTML()+historyHTML(); }
+
+/* ================= TRAINING CALENDAR + MUSCLE MAP ================= */
+const isoOf=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+/* every finished-set day across the current block and archived blocks: [{date, sets, mu:{muscle:sets}}] */
+function workoutDays(){
+  const days={};
+  const scan=(plan,logs)=>{
+    for(const k in (logs||{})){
+      const L=logs[k]; if(!L||!L.date||!L.rows) continue;
+      const [m,,s]=k.split("-"); let n=0; const mu={};
+      for(const sl of SLOTS){
+        const rl=L.rows[sl.id]; if(!rl||!Array.isArray(rl.sets)) continue;
+        const c=rl.sets.filter(okSet).length; if(!c) continue;
+        const p=plan&&plan[s]&&plan[s][m]&&plan[s][m][sl.id]; if(!p) continue;
+        const g=rl.ex?(findGroup(rl.ex)||muscleOf(p)):muscleOf(p);
+        n+=c; if(g) mu[g]=(mu[g]||0)+c;
+      }
+      if(!n) continue;
+      const d=days[L.date]||(days[L.date]={date:L.date,sets:0,mu:{}});
+      d.sets+=n; for(const g in mu) d.mu[g]=(d.mu[g]||0)+mu[g];
+    }
+  };
+  scan(state.plan,state.logs);
+  for(const b of state.blocks) scan(b.plan,b.logs);
+  return days;
+}
+function calHTML(){
+  const days=workoutDays(), today=new Date(); today.setHours(12,0,0,0);
+  const dow=(today.getDay()+6)%7, WEEKS=26, start=new Date(today); start.setDate(start.getDate()-dow-(WEEKS-1)*7);
+  let cells="", months="", lastM=-1, total=0, perWeek=[];
+  for(let wk=0;wk<WEEKS;wk++){
+    const ws=new Date(start); ws.setDate(ws.getDate()+wk*7);
+    if(ws.getMonth()!==lastM){ months+=`<span style="grid-column:${wk+1}">${ws.toLocaleDateString(undefined,{month:"short"})}</span>`; lastM=ws.getMonth(); }
+    let cnt=0;
+    for(let d=0;d<7;d++){
+      const dt=new Date(ws); dt.setDate(dt.getDate()+d); const iso=isoOf(dt), rec=days[iso], fut=dt>today;
+      const lv=rec?(rec.sets>=20?3:(rec.sets>=10?2:1)):0; if(rec){ cnt++; total++; }
+      cells+=`<span class="cd l${lv}${fut?" fut":""}${iso===isoOf(today)?" now":""}" title="${iso}${rec?": "+rec.sets+" sets":""}"></span>`;
+    }
+    perWeek.push(cnt);
+  }
+  let streak=0, i=WEEKS-1; if(!perWeek[i]) i--; while(i>=0&&perWeek[i]>0){ streak++; i--; }
+  const last4=perWeek.slice(-4).reduce((a,b)=>a+b,0);
+  return `<div class="sect disp">Training calendar</div>
+  <div class="card">
+    <div class="statrow calstats">
+      <div class="stat"><div class="v num">${perWeek[WEEKS-1]}</div><div class="k">days this week</div></div>
+      <div class="stat"><div class="v num">${last4}</div><div class="k">days, last 4 weeks</div></div>
+      <div class="stat"><div class="v num">${streak}</div><div class="k">week streak</div></div>
+    </div>
+    <div class="calwrap"><div class="calmon" style="grid-template-columns:repeat(${WEEKS},1fr)">${months}</div><div class="calgrid" style="grid-template-columns:repeat(${WEEKS},1fr)">${cells}</div></div>
+    <div class="legend"><span><span class="sw"></span>rest</span><span><span class="sw cl1"></span>1–9 sets</span><span><span class="sw cl2"></span>10–19</span><span><span class="sw cl3"></span>20+</span></div>
+    <div class="hint">${total} training days in the last 6 months. Includes finished blocks.</div>
+  </div>`;
+}
+const E=(cx,cy,rx,ry,rot)=>`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"${rot?` transform="rotate(${rot} ${cx} ${cy})"`:""}/>`;
+const MAP_FRONT={"Front Delt":[E(63,95,11,14),E(137,95,11,14)],"Side Delt":[E(49,108,8,13),E(151,108,8,13)],"Chest":[E(83,110,19,15),E(117,110,19,15)],
+  "Biceps":[E(44,142,8,20,6),E(156,142,8,20,-6)],"Forearms":[E(38,190,7,24,5),E(162,190,7,24,-5)],"Abs":[`<rect x="86" y="130" width="28" height="60" rx="10"/>`],
+  "Quads":[E(84,264,17,52),E(116,264,17,52)],"Adductors":[E(95,248,5,28),E(105,248,5,28)],"Calves":[E(80,354,10,28),E(120,354,10,28)]};
+const MAP_BACK={"Upper Back":[`<path d="M100 78 L124 92 L117 130 L100 136 L83 130 L76 92 Z"/>`],"Rear Delt":[E(63,97,11,13),E(137,97,11,13)],"Lats":[E(76,152,13,28,-12),E(124,152,13,28,12)],
+  "Triceps":[E(44,142,8,20,6),E(156,142,8,20,-6)],"Forearms":[E(38,190,7,24,5),E(162,190,7,24,-5)],"Erectors":[E(94,178,7,22),E(106,178,7,22)],
+  "Glutes":[E(86,224,18,17),E(114,224,18,17)],"Hams":[E(84,284,16,44),E(116,284,16,44)],"Calves":[E(80,354,10,28),E(120,354,10,28)]};
+const MAP_BASE=`<circle cx="100" cy="32" r="17"/><rect x="92" y="46" width="16" height="30" rx="6"/><rect x="58" y="76" width="84" height="140" rx="24"/><rect x="30" y="90" width="26" height="122" rx="13"/><rect x="144" y="90" width="26" height="122" rx="13"/><rect x="64" y="206" width="34" height="176" rx="16"/><rect x="102" y="206" width="34" height="176" rx="16"/>`;
+const MAP_RANGES=[["7d","7d",7],["4w","4w",28],["3m","3m",91],["6m","6m",182],["all","All",0]];
+function mapLevel(v){ return v<=0?0:(v<5?1:(v<10?2:(v<15?3:4))); }
+function mapSVG(shapes,sets,label){
+  let g=""; for(const k in shapes) g+=`<g class="ml l${mapLevel(sets[k]||0)}">${shapes[k].join("")}</g>`;
+  return `<figure><svg viewBox="0 0 200 400" role="img" aria-label="${label} muscle map"><g class="mbase">${MAP_BASE}</g>${g}</svg><figcaption>${label}</figcaption></figure>`;
+}
+function mapHTML(){
+  const days=workoutDays(), sel=state.mapRange||"4w", def=MAP_RANGES.find(r=>r[0]===sel)||MAP_RANGES[1];
+  const today=new Date(); today.setHours(12,0,0,0);
+  let from="", weeks=0;
+  const dates=Object.keys(days).sort();
+  if(def[2]){ const f=new Date(today); f.setDate(f.getDate()-def[2]+1); from=isoOf(f); weeks=def[2]/7; }
+  else if(dates.length){ from=dates[0]; weeks=Math.max(1,(today-new Date(dates[0]+"T12:00:00"))/604800000); }
+  const tot={}; let any=0;
+  for(const d of dates){ if(from&&d<from) continue; any++; for(const g in days[d].mu) tot[g]=(tot[g]||0)+days[d].mu[g]; }
+  const sets={}; for(const g in tot) sets[g]=Math.round(tot[g]/Math.max(weeks,1)*10)/10;
+  const rows=MUSCLES.map(g=>[g,sets[g]||0]).sort((a,b)=>b[1]-a[1]);
+  const mx=Math.max(10,...rows.map(r=>r[1]));
+  return `<div class="sect disp">Muscle map</div>
+  <div class="card">
+    <div class="wkchips mapchips" role="group" aria-label="Time range">${MAP_RANGES.map(r=>`<button data-mr="${r[0]}" aria-pressed="${r[0]===def[0]}">${r[1]}</button>`).join("")}</div>
+    <div class="mapwrap">${mapSVG(MAP_FRONT,sets,"Front")}${mapSVG(MAP_BACK,sets,"Back")}</div>
+    <div class="legend"><span><span class="sw"></span>0</span><span><span class="sw ml1"></span>&lt;5</span><span><span class="sw ml2"></span>5–9</span><span><span class="sw ml3"></span>10–14</span><span><span class="sw ml4"></span>15+ sets/week</span></div>
+    ${any?`<div class="mlist">${rows.map(([g,v])=>`<div class="mrow"><span>${esc(g)}</span><span class="mbar"><i style="width:${Math.round(v/mx*100)}%"></i></span><b class="num">${fmtKg(v)}</b></div>`).join("")}</div>`
+      :`<div class="hint" style="margin-top:10px">No finished sets in this range. Try a longer one.</div>`}
+    <div class="hint">Average finished sets per week in the range. Calculated from your logs, including finished blocks.</div>
+  </div>`;
+}
+function progHTML(){ return calHTML()+mapHTML()+progHTML0()+muscleSectionHTML()+historyHTML(); }
 function libHTML(){
   const open=state.libOpen||{};
   const det=(key,title,count,body)=>`<details class="lacc" data-lk="${esc(key)}"${open[key]?" open":""}><summary><span>${title}</span><span class="count num">${count}</span></summary><div class="lbody">${body}</div></details>`;
@@ -2703,6 +2818,7 @@ function wireExtra(v){
   const addE=v.querySelector("#addE"); if(addE) addE.addEventListener("click",()=>{ state.showE=true; state.planOpen="E"; save(); render(); });
   v.querySelectorAll("[data-pgstart]").forEach(b=>b.addEventListener("click",()=>{ const sel=v.querySelector(`[data-pglen="${b.dataset.pgstart}"]`); startFlow(state.programmes.find(x=>x.id===b.dataset.pgstart),{weeks:sel?+sel.value:12}); }));
   v.querySelectorAll("[data-pgdel]").forEach(b=>b.addEventListener("click",()=>{ const pg=state.programmes.find(x=>x.id===b.dataset.pgdel); confirmDlg(`Delete the saved programme “${pg.name}”? Blocks already run from it stay in your history.`,"Delete",()=>{ state.programmes=state.programmes.filter(x=>x.id!==pg.id); if(state.block.progId===pg.id) state.block.progId=""; save(); render(); }); }));
+  v.querySelectorAll("[data-mr]").forEach(b=>b.addEventListener("click",()=>{ state.mapRange=b.dataset.mr; save(); render(); }));
   v.querySelectorAll("[data-pw]").forEach(b=>b.addEventListener("click",()=>{ state.pw=+b.dataset.pw; save(); render(); }));
   v.querySelectorAll("[data-blksave]").forEach(b=>b.addEventListener("click",()=>{ const bl=state.blocks.find(x=>x.id===b.dataset.blksave); promptDlg("Name this programme",bl.name,"Save",n=>{ saveProgramme(n,bl.plan,false,bl.weeks||12); render(); }); }));
   v.querySelectorAll("[data-blkdel]").forEach(b=>b.addEventListener("click",()=>{ const bl=state.blocks.find(x=>x.id===b.dataset.blkdel); confirmDlg(`Delete “${bl.name}” and its logs from your history? This can't be undone.`,"Delete",()=>{ state.blocks=state.blocks.filter(x=>x.id!==bl.id); save(); render(); }); }));
