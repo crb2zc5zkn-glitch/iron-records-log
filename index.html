@@ -1773,10 +1773,20 @@ function startFlow(pg,opt){
   const weeks=Math.min(12,Math.max(1,parseInt(opt.weeks||pg.weeks)||12)), st=blockStats(state.plan,state.logs);
   const use=()=>opt.clone?saveProgramme(pg.name+" (copy)",pg.plan,false,weeks):pg;
   const done=()=>{ clampPos(); state.tab=opt.clone?"plan":"train"; if(opt.clone) state.planOpen="A"; };
-  choiceDlg(`${opt.clone?"Clone":"Start"} “${pg.name}” for ${weeks} weeks? `+(opt.clone?"You get your own editable copy under Saved programmes. ":"")+(st.sets?`Your current block “${state.block.name}” (${st.sets} sets logged) will be archived to Programme history.`:"Your current plan will be replaced."),[
-    {label:opt.clone?"Clone as new block":"Start new block",primary:true,fn:()=>{ archiveBlock(); const g=use(); applyProgramme(g); state.block={id:uid(),name:opt.clone?g.name:pg.name,progId:g.id,start:todayISO(),weeks,orm:Object.assign({},state.block.orm)}; resetForNewBlock(); done(); save(); toast((opt.clone?"Cloned “":"Started “")+pg.name+"”"); render(); }},
+  choiceDlg(`${opt.clone?"Clone":"Start"} “${pg.name}” for ${weeks} weeks? `+(opt.clone?"A copy goes into Saved programmes so you can edit it. ":"")+"Choose how to use it: "+(st.sets?`“Start new block” archives your current block “${state.block.name}” (${st.sets} sets logged) to Programme history and starts fresh. `:"“Start new block” starts a fresh block. ")+"“Replace plan only” keeps the current block and all its logs, and swaps in the new exercises.",[
+    {label:opt.clone?"Clone as new block (fresh logs)":"Start new block (fresh logs)",primary:true,fn:()=>{ archiveBlock(); const g=use(); applyProgramme(g); state.block={id:uid(),name:opt.clone?g.name:pg.name,progId:g.id,start:todayISO(),weeks,orm:Object.assign({},state.block.orm)}; resetForNewBlock(); done(); save(); toast((opt.clone?"Cloned “":"Started “")+pg.name+"”"); render(); }},
     {label:"Replace plan only (keep logs)",fn:()=>{ const g=use(); applyProgramme(g); state.block.progId=g.id; state.block.weeks=weeks; done(); save(); toast("Plan replaced"); render(); }}
   ]);
+}
+/* Edit: load a programme into the Plan editor. Presets get an editable copy in Saved programmes first. Logs are kept. */
+function editFlow(pg,opt){
+  opt=opt||{}; const isPre=String(pg.id).indexOf("preset:")===0;
+  confirmDlg(`Edit “${pg.name}”? It replaces your current plan with this programme so you can change it. Your logged sessions are kept. ${isPre?"An editable copy is saved under Saved programmes. ":""}When you finish, tap “Save plan as programme” to store your changes.`,"Edit programme",()=>{
+    let g=pg;
+    if(isPre){ g=state.programmes.find(x=>x.name.toLowerCase()===pg.name.toLowerCase())||saveProgramme(pg.name,pg.plan,false,opt.weeks||pg.weeks); }
+    applyProgramme(g); state.block.progId=g.id; if(opt.weeks||g.weeks) state.block.weeks=Math.min(12,Math.max(1,parseInt(opt.weeks||g.weeks)||12));
+    clampPos(); state.tab="plan"; state.planOpen="A"; save(); toast("Editing “"+pg.name+"”"); render();
+  });
 }
 function endBlockFlow(){
   const st=blockStats(state.plan,state.logs);
@@ -2280,8 +2290,8 @@ function presetsHTML(){
       return `<details class="pdet"><summary><span class="pgname">${esc(P.name)}</span><span class="pgmeta num">${P.days.length} days · ${n?n+" exercises":slots+" muscle slots"}</span></summary>
         <div class="pdbody"><p class="hint" style="margin:0 0 6px">${esc(P.note)}</p>${days}
         <div class="formline" style="margin-top:10px"><label class="lenlbl">Length <select class="lensel" data-prlen="${P.id}">${lenOpts(P.weeks||12)}</select></label></div>
-        <div class="formline"><button class="btn primary" data-prstart="${P.id}">Start programme</button><button class="btn" data-prclone="${P.id}">Clone programme</button></div>
-        <div class="hint">Start runs it as is. Clone keeps your own editable copy under Saved programmes and opens Plan so you can change it. You can edit the plan after either.</div></div></details>`;
+        <div class="formline"><button class="btn primary" data-prstart="${P.id}">Start programme</button><button class="btn" data-predit="${P.id}">Edit programme</button><button class="btn" data-prclone="${P.id}">Clone programme</button></div>
+        <div class="hint">Start runs it as is. Edit loads it into Plan so you can change it, and keeps a copy in Saved programmes. Clone saves a copy and starts it as a new block or swaps it into your current one.</div></div></details>`;
   }).join("");
   return `<div class="sect disp">Preset programmes</div><div class="lacc"><div class="lbody">${rows}</div></div>`;
 }
@@ -2290,7 +2300,7 @@ function presetsHTML(){
 function programmeCardsHTML(){
   const b=state.block, st=blockStats(state.plan,state.logs), base=progById(b.progId);
   const list=state.programmes.length
-    ? state.programmes.slice().sort((x,y)=>y.saved<x.saved?-1:1).map(pg=>`<div class="pgrow"><div class="pginfo"><div class="pgname">${esc(pg.name)}${pg.id===b.progId?' <span class="chip part">active</span>':""}</div><div class="pgmeta num">${esc(progSummary(pg.plan))} · saved ${esc(shortDate(pg.saved))}</div></div><select class="lensel" data-pglen="${pg.id}" aria-label="Length of ${esc(pg.name)}">${lenOpts(pg.weeks||12)}</select><button class="btn" data-pgstart="${pg.id}">Start</button><button class="btn danger" data-pgdel="${pg.id}" aria-label="Delete ${esc(pg.name)}">✕</button></div>`).join("")
+    ? state.programmes.slice().sort((x,y)=>y.saved<x.saved?-1:1).map(pg=>`<div class="pgrow"><div class="pginfo"><div class="pgname">${esc(pg.name)}${pg.id===b.progId?' <span class="chip part">active</span>':""}</div><div class="pgmeta num">${esc(progSummary(pg.plan))} · saved ${esc(shortDate(pg.saved))}</div></div><select class="lensel" data-pglen="${pg.id}" aria-label="Length of ${esc(pg.name)}">${lenOpts(pg.weeks||12)}</select><button class="btn" data-pgedit="${pg.id}">Edit</button><button class="btn" data-pgstart="${pg.id}">Start</button><button class="btn danger" data-pgdel="${pg.id}" aria-label="Delete ${esc(pg.name)}">✕</button></div>`).join("")
     : `<div class="hint">Nothing saved yet. Build your plan below, then “Save as programme” to reuse it later.</div>`;
   return `<div class="card">
     <div class="disp" style="font-size:15px">Current block</div>
@@ -2636,12 +2646,14 @@ function wireExtra(v){
   v.querySelectorAll("[data-model]").forEach(sel=>sel.addEventListener("change",()=>{ const [s,mth,slot]=sel.dataset.model.split("|"); state.plan[s][mth][slot].model=sel.value; save(); }));
   v.querySelectorAll("[data-vsel]").forEach(seg=>seg.addEventListener("click",e=>{ const b=e.target.closest("button[data-v]"); if(!b) return; state.volSel[seg.dataset.vsel]=+b.dataset.v; save(); render(); }));
   const bn=v.querySelector("#blockname"); if(bn) bn.addEventListener("change",()=>{ state.block.name=bn.value.trim()||"Untitled block"; save(); });
-  const sp=v.querySelector("#saveprog"); if(sp) sp.addEventListener("click",()=>promptDlg("Name this programme",state.block.name,"Save",n=>{ saveProgramme(n,state.plan,true,BW()); render(); }));
+  const sp=v.querySelector("#saveprog"); if(sp) sp.addEventListener("click",()=>promptDlg("Name this programme (using an existing name updates that programme)",(state.programmes.find(x=>x.id===state.block.progId)||{}).name||state.block.name,"Save",n=>{ saveProgramme(n,state.plan,true,BW()); render(); }));
   const bwk=v.querySelector("#blockweeks"); if(bwk) bwk.addEventListener("change",()=>{ state.block.weeks=+bwk.value; clampPos(); save(); render(); });
   const ad=v.querySelector("#alldyn"); if(ad) ad.addEventListener("click",()=>{ for(const s of SESSIONS) for(const m of [1,2,3]) for(const sl of SLOTS) state.plan[s][m][sl.id].model="Dynamic double progression"; save(); toast("Every exercise now uses dynamic double progression"); render(); });
   const eb=v.querySelector("#endblock"); if(eb) eb.addEventListener("click",endBlockFlow);
   const prRun=(id,clone)=>{ const P=presetById(id), sel=v.querySelector(`[data-prlen="${id}"]`); startFlow({id:"preset:"+P.id,name:P.name,plan:buildPreset(P)},{weeks:sel?+sel.value:12,clone}); };
   v.querySelectorAll("[data-prstart]").forEach(b=>b.addEventListener("click",()=>prRun(b.dataset.prstart,false)));
+  v.querySelectorAll("[data-predit]").forEach(b=>b.addEventListener("click",()=>{ const id=b.dataset.predit, P=presetById(id), sel=v.querySelector(`[data-prlen="${id}"]`); editFlow({id:"preset:"+P.id,name:P.name,plan:buildPreset(P),weeks:P.weeks},{weeks:sel?+sel.value:12}); }));
+  v.querySelectorAll("[data-pgedit]").forEach(b=>b.addEventListener("click",()=>editFlow(state.programmes.find(x=>x.id===b.dataset.pgedit))));
   v.querySelectorAll("[data-prclone]").forEach(b=>b.addEventListener("click",()=>prRun(b.dataset.prclone,true)));
   const addE=v.querySelector("#addE"); if(addE) addE.addEventListener("click",()=>{ state.showE=true; state.planOpen="E"; save(); render(); });
   v.querySelectorAll("[data-pgstart]").forEach(b=>b.addEventListener("click",()=>{ const sel=v.querySelector(`[data-pglen="${b.dataset.pgstart}"]`); startFlow(state.programmes.find(x=>x.id===b.dataset.pgstart),{weeks:sel?+sel.value:12}); }));
