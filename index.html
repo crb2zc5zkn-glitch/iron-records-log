@@ -1404,7 +1404,7 @@ function blankPlan(){
   return plan;
 }
 let state=null, storageOK=true;
-function defaults(){ return {v:1,name:"",restSec:120,library:JSON.parse(JSON.stringify(LIB_DEFAULT)),custom:{},plan:blankPlan(),logs:{},pos:{m:1,w:1,s:"A"},tab:"train",planOpen:"A",planMonth:{},trendEx:"",programmes:[],blocks:[],block:{id:uid(),name:"My block",progId:"",start:todayISO()},volSel:{m:1,w:1},pw:0,libOpen:{},sm:{cfg:0,logs:{}}}; }
+function defaults(){ return {v:1,name:"",restSec:120,library:JSON.parse(JSON.stringify(LIB_DEFAULT)),custom:{},plan:blankPlan(),logs:{},pos:{m:1,w:1,s:"A"},tab:"train",planOpen:"A",planMonth:{},trendEx:"",programmes:[],hiddenPresets:[],blocks:[],block:{id:uid(),name:"My block",progId:"",start:todayISO()},volSel:{m:1,w:1},pw:0,libOpen:{},sm:{cfg:0,logs:{}}}; }
 function load(){
   try{ const raw=localStorage.getItem(KEY); state = raw? Object.assign(defaults(),JSON.parse(raw)) : defaults(); }
   catch(e){ storageOK=false; state=defaults(); }
@@ -1415,6 +1415,7 @@ function migrate(){
   if(state.planOpen && !SESSIONS.includes(state.planOpen)) state.planOpen="A";
   if(!Array.isArray(state.programmes)) state.programmes=[];
   if(!Array.isArray(state.blocks)) state.blocks=[];
+  if(!Array.isArray(state.hiddenPresets)) state.hiddenPresets=[];
   if(!state.volSel) state.volSel={m:1,w:1};
   if(!state.libOpen) state.libOpen={};
   if(state.pw==null) state.pw=0;
@@ -1873,7 +1874,7 @@ function hstr(x){ let h=5381; for(let i=0;i<x.length;i++) h=((h<<5)+h+x.charCode
 function canon(o){ if(o===null||typeof o!=="object") return JSON.stringify(o); if(Array.isArray(o)) return "["+o.map(canon).join(",")+"]"; return "{"+Object.keys(o).sort().map(k=>JSON.stringify(k)+":"+canon(o[k])).join(",")+"}"; }
 function contentHash(d){ d=d||state; return hstr(canon({plan:d.plan,library:d.library,logs:d.logs,programmes:d.programmes,blocks:d.blocks,block:d.block,name:d.name})); }
 const HASHES={cfg:null,logs:{}};
-function cfgDoc(){ return {plan:state.plan,library:state.library,programmes:state.programmes,blocks:state.blocks,block:state.block,name:state.name}; }
+function cfgDoc(){ return {plan:state.plan,library:state.library,hiddenPresets:state.hiddenPresets,programmes:state.programmes,blocks:state.blocks,block:state.block,name:state.name}; }
 function baselineHashes(){ HASHES.cfg=hstr(JSON.stringify(cfgDoc())); HASHES.logs={}; for(const k in state.logs) HASHES.logs[k]=hstr(JSON.stringify(state.logs[k])); }
 /* remember when each part last changed on this device, so a merge can keep the newer side */
 function stampChanges(){
@@ -1883,9 +1884,9 @@ function stampChanges(){
   for(const k in sm.logs) if(!(k in state.logs)){ delete sm.logs[k]; delete HASHES.logs[k]; }
 }
 baselineHashes();
-function exportDoc(){ return JSON.parse(JSON.stringify({plan:state.plan,library:state.library,logs:state.logs,programmes:state.programmes,blocks:state.blocks,block:state.block,name:state.name,sm:state.sm})); }
+function exportDoc(){ return JSON.parse(JSON.stringify({plan:state.plan,library:state.library,hiddenPresets:state.hiddenPresets,logs:state.logs,programmes:state.programmes,blocks:state.blocks,block:state.block,name:state.name,sm:state.sm})); }
 function applyDoc(d){
-  state.plan=d.plan; state.library=d.library; state.logs=d.logs||{}; state.programmes=d.programmes||[]; state.blocks=d.blocks||[]; state.block=d.block; state.name=d.name||""; state.sm=d.sm||{cfg:0,logs:{}};
+  state.plan=d.plan; state.library=d.library; state.hiddenPresets=d.hiddenPresets||[]; state.logs=d.logs||{}; state.programmes=d.programmes||[]; state.blocks=d.blocks||[]; state.block=d.block; state.name=d.name||""; state.sm=d.sm||{cfg:0,logs:{}};
   migrate(); baselineHashes();
   clearTimeout(saveT); try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){}
   render();
@@ -1905,7 +1906,7 @@ function mergeDocs(L,R){
   const out={}, lNew=(L.sm.cfg||0)>=(R.sm.cfg||0), base=lNew?L:R, sm={cfg:Math.max(L.sm.cfg||0,R.sm.cfg||0),logs:{}};
   out.blocks=unionById(cp(L.blocks),cp(R.blocks));
   out.programmes=unionById(cp(L.programmes),cp(R.programmes),(x,y)=>(x.saved>=y.saved?x:y));
-  out.library=cp(base.library); out.name=base.name||L.name||R.name||"";
+  out.library=cp(base.library); out.hiddenPresets=cp(base.hiddenPresets||[]); out.name=base.name||L.name||R.name||"";
   if(L.block.id===R.block.id){
     out.block=cp(base.block); out.plan=cp(base.plan); out.logs={};
     { const other=base===L?R:L; if(other.block.orm||base.block.orm) out.block.orm=Object.assign({},other.block.orm,base.block.orm); }   // 1RMs: keep ones only the other device has
@@ -2319,17 +2320,17 @@ function visSessions(){ return SESSIONS.filter(s=>s!=="E"||state.showE||sessPlan
 function presetCount(P){ return P.days.reduce((a,d)=>a+d[1].filter(l=>l.split("|")[0]).length,0); }
 const lenOpts=sel=>[2,3,4,5,6,7,8,9,10,11,12].map(n=>`<option value="${n}"${n===sel?" selected":""}>${n} wks</option>`).join("");
 function presetsHTML(){
-  const items=PRESETS.slice().sort((x,y)=>x.name.localeCompare(y.name,undefined,{numeric:true}));
+  const hid=state.hiddenPresets||[], items=PRESETS.filter(P=>!hid.includes(P.id)).slice().sort((x,y)=>x.name.localeCompare(y.name,undefined,{numeric:true}));
   const rows=items.map(P=>{
       const n=presetCount(P), slots=P.days.reduce((a,d)=>a+d[1].length,0);
       const days=P.days.map((d,i)=>`<div class="pdday"><b>${SESSIONS[i]} · ${esc(d[0])}</b><br>${d[1].map(l=>{ const f=l.split("|"); return esc(f[0]||"("+f[1]+")"); }).join(" · ")}</div>`).join("");
       return `<details class="pdet"><summary><span class="pgname">${esc(P.name)}</span><span class="pgmeta num">${P.days.length} days · ${n?n+" exercises":slots+" muscle slots"}</span></summary>
         <div class="pdbody"><p class="hint" style="margin:0 0 6px">${esc(P.note)}</p>${days}
         <div class="formline" style="margin-top:10px"><label class="lenlbl">Length <select class="lensel" data-prlen="${P.id}">${lenOpts(P.weeks||12)}</select></label></div>
-        <div class="formline"><button class="btn primary" data-prstart="${P.id}">Start programme</button><button class="btn" data-predit="${P.id}">Edit programme</button><button class="btn" data-prclone="${P.id}">Clone programme</button></div>
+        <div class="formline"><button class="btn primary" data-prstart="${P.id}">Start programme</button><button class="btn" data-predit="${P.id}">Edit programme</button><button class="btn" data-prclone="${P.id}">Clone programme</button><button class="btn danger" data-prhide="${P.id}">Remove from list</button></div>
         <div class="hint">Start runs it as is. Edit loads it into Plan so you can change it, and keeps a copy in Saved programmes. Clone saves a copy and starts it as a new block or swaps it into your current one.</div></div></details>`;
   }).join("");
-  return `<div class="sect disp">Preset programmes</div><div class="lacc"><div class="lbody">${rows}</div></div>`;
+  return `<div class="sect disp">Preset programmes</div><div class="lacc"><div class="lbody">${rows}</div></div>${hid.length?`<div class="formline" style="margin-top:8px"><button class="btn" id="prrestore">Restore ${hid.length} removed preset${hid.length>1?"s":""}</button></div>`:""}`;
 }
 
 /* ================= PLAN ================= */
@@ -2694,6 +2695,8 @@ function wireExtra(v){
   const eb=v.querySelector("#endblock"); if(eb) eb.addEventListener("click",endBlockFlow);
   const prRun=(id,clone)=>{ const P=presetById(id), sel=v.querySelector(`[data-prlen="${id}"]`); startFlow({id:"preset:"+P.id,name:P.name,plan:buildPreset(P)},{weeks:sel?+sel.value:12,clone}); };
   v.querySelectorAll("[data-prstart]").forEach(b=>b.addEventListener("click",()=>prRun(b.dataset.prstart,false)));
+  v.querySelectorAll("[data-prhide]").forEach(b=>b.addEventListener("click",()=>{ const P=presetById(b.dataset.prhide); confirmDlg(`Remove “${P.name}” from the preset list? Blocks already run from it, and any copies in Saved programmes, are not affected. You can bring it back with “Restore removed presets”.`,"Remove",()=>{ if(!state.hiddenPresets.includes(P.id)) state.hiddenPresets.push(P.id); save(); render(); }); }));
+  const prr=v.querySelector("#prrestore"); if(prr) prr.addEventListener("click",()=>{ state.hiddenPresets=[]; save(); render(); toast("Presets restored"); });
   v.querySelectorAll("[data-predit]").forEach(b=>b.addEventListener("click",()=>{ const id=b.dataset.predit, P=presetById(id), sel=v.querySelector(`[data-prlen="${id}"]`); editFlow({id:"preset:"+P.id,name:P.name,plan:buildPreset(P),weeks:P.weeks},{weeks:sel?+sel.value:12}); }));
   v.querySelectorAll("[data-pgedit]").forEach(b=>b.addEventListener("click",()=>editFlow(state.programmes.find(x=>x.id===b.dataset.pgedit))));
   v.querySelectorAll("[data-prclone]").forEach(b=>b.addEventListener("click",()=>prRun(b.dataset.prclone,true)));
