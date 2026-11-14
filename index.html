@@ -125,6 +125,8 @@ header .sub{color:var(--muted); font-size:13px; margin-top:3px}
 .exname{font-size:18px; font-weight:700; line-height:1.2; margin-top:3px}
 .rx{color:var(--muted); font-size:13px; margin-top:3px}
 .rx b{color:var(--ink); font-weight:600}
+.swbtn{flex:none; padding:6px 9px; border-radius:10px; background:var(--card2); color:var(--ink); font-weight:700; font-size:13px}
+.dcol .btn .sub{display:block; font-weight:400; font-size:12px; opacity:.75; margin-top:2px; white-space:normal}
 .restchip{display:inline-flex; align-items:center; gap:5px; padding:6px 9px; border-radius:10px; background:var(--accent-soft); color:var(--accent); font-weight:700; font-size:13px; flex:none}
 .restchip select{appearance:none; -webkit-appearance:none; border:0; background:transparent; color:inherit; font:inherit; padding:0; width:auto; border-radius:0}
 .hintbtn{display:block; width:100%; text-align:left; margin-top:10px; padding:8px 10px; border-radius:10px; background:var(--good-soft); color:var(--good); font-size:13px; font-weight:600}
@@ -1493,6 +1495,8 @@ function setAt(m,w,s,slot,i,make){
 function okSet(x){ return !!(x&&x.ok&&x.r>0); }
 function fmtKg(n){ return String(Math.round(n*100)/100); }
 function slotPlan(sess,m,slot){ return state.plan[sess][m][slot]; }
+/* the exercise actually done in a given week: a per-week switch (rl.ex) wins over the plan */
+function exAt(sess,m,w,slot){ const rl=rowLog(m,w,sess,slot,false); return (rl&&rl.ex)||slotPlan(sess,m,slot).ex; }
 /* percentage prescriptions: p.pw = one row per week, a row = [{r:"5"|"5+"|"3-6", p:percent of 1RM}, ...] (+ = as many reps as you can).
    p.pwCycle repeats the rows; p.bump (kg) is added to the 1RM every p.every weeks. The 1RM is stored per exercise on the block (state.block.orm). */
 function parsePw(str){
@@ -1596,7 +1600,7 @@ function prevSessions(m,w,s,slot,ex,max){
   const idx=order.findIndex(o=>o[0]===m&&o[1]===w), out=[];
   for(let i=idx-1;i>=0&&out.length<max;i--){
     const [mm,ww]=order[i];
-    if(slotPlan(s,mm,slot).ex!==ex) continue;
+    if(exAt(s,mm,ww,slot)!==ex) continue;
     const rl=rowLog(mm,ww,s,slot,false);
     const oks=((rl&&rl.sets)||[]).filter(okSet);
     if(!oks.length) continue;
@@ -1663,7 +1667,7 @@ function liveNote(m,w,s,slot,n){
 function progressFor(m,w,s,slot){
   const p=slotPlan(s,m,slot), inc=parseFloat(p.prog)||0, model=p.model||"Double progression";
   if(pwRow(p,absWeek(m,w))) return {delta:()=>0,up:false,msg:""};
-  const hist=prevSessions(m,w,s,slot,p.ex,3), none={delta:()=>0,up:false,msg:""};
+  const hist=prevSessions(m,w,s,slot,exAt(s,m,w,slot),3), none={delta:()=>0,up:false,msg:""};
   if(!hist.length) return none;
   const ls=hist[0], rx=ls.rx, rg=i=>rangeAt(rx,i), oks=ls.oks, full=oks.length>=rx.sets;
   const tops=Array.from({length:rx.sets},(_,i)=>rg(i)[1]), top=tops[0], bot=rg(0)[0], topTxt=tops.every(t=>t===top)?String(top):"the top of its range";
@@ -1715,7 +1719,7 @@ function suggestW(m,w,s,slot,i){
   }else if(i!==ref&&rl&&rl.sets&&has(rl.sets[ref])){
     return {v:fmtKg(roundW(parseFloat(rl.sets[ref].w)*styleMult(style,i,n)/styleMult(style,ref,n))),up:false};
   }
-  const ls=lastSession(m,w,s,slot,p.ex); if(!ls) return null;
+  const ls=lastSession(m,w,s,slot,exAt(s,m,w,slot)); if(!ls) return null;
   const pr=progressFor(m,w,s,slot), pick=k=>okSet(ls.sets[k])?ls.sets[k]:ls.oks[ls.oks.length-1];
   const k0=shaped?ref:i, base=parseFloat(pick(k0).w); if(isNaN(base)) return null;
   const d=pr.delta(k0);
@@ -1773,20 +1777,44 @@ function startFlow(pg,opt){
   const weeks=Math.min(12,Math.max(1,parseInt(opt.weeks||pg.weeks)||12)), st=blockStats(state.plan,state.logs);
   const use=()=>opt.clone?saveProgramme(pg.name+" (copy)",pg.plan,false,weeks):pg;
   const done=()=>{ clampPos(); state.tab=opt.clone?"plan":"train"; if(opt.clone) state.planOpen="A"; };
-  choiceDlg(`${opt.clone?"Clone":"Start"} “${pg.name}” for ${weeks} weeks? `+(opt.clone?"A copy goes into Saved programmes so you can edit it. ":"")+"Choose how to use it: "+(st.sets?`“Start new block” archives your current block “${state.block.name}” (${st.sets} sets logged) to Programme history and starts fresh. `:"“Start new block” starts a fresh block. ")+"“Replace plan only” keeps the current block and all its logs, and swaps in the new exercises.",[
-    {label:opt.clone?"Clone as new block (fresh logs)":"Start new block (fresh logs)",primary:true,fn:()=>{ archiveBlock(); const g=use(); applyProgramme(g); state.block={id:uid(),name:opt.clone?g.name:pg.name,progId:g.id,start:todayISO(),weeks,orm:Object.assign({},state.block.orm)}; resetForNewBlock(); done(); save(); toast((opt.clone?"Cloned “":"Started “")+pg.name+"”"); render(); }},
-    {label:"Replace plan only (keep logs)",fn:()=>{ const g=use(); applyProgramme(g); state.block.progId=g.id; state.block.weeks=weeks; done(); save(); toast("Plan replaced"); render(); }}
+  const sub1=st.sets?`Saves “${state.block.name}” (${st.sets} sets logged) to Programme history. Logs start empty.`:"Logs start empty.";
+  choiceDlg(`${opt.clone?"Clone":"Start"} “${pg.name}” · ${weeks} weeks`+(opt.clone?". A copy is saved under Saved programmes so you can edit it.":"."),[
+    {label:"Start a new block",sub:sub1,primary:true,fn:()=>{ archiveBlock(); const g=use(); applyProgramme(g); state.block={id:uid(),name:opt.clone?g.name:pg.name,progId:g.id,start:todayISO(),weeks,orm:Object.assign({},state.block.orm)}; resetForNewBlock(); done(); save(); toast((opt.clone?"Cloned “":"Started “")+pg.name+"”"); render(); }},
+    {label:"Swap the plan only",sub:"Stay in this block and keep every logged set. Only the exercises change.",fn:()=>{ const g=use(); applyProgramme(g); state.block.progId=g.id; state.block.weeks=weeks; done(); save(); toast("Plan replaced"); render(); }}
   ]);
 }
 /* Edit: load a programme into the Plan editor. Presets get an editable copy in Saved programmes first. Logs are kept. */
 function editFlow(pg,opt){
   opt=opt||{}; const isPre=String(pg.id).indexOf("preset:")===0;
-  confirmDlg(`Edit “${pg.name}”? It replaces your current plan with this programme so you can change it. Your logged sessions are kept. ${isPre?"An editable copy is saved under Saved programmes. ":""}When you finish, tap “Save plan as programme” to store your changes.`,"Edit programme",()=>{
+  confirmDlg(`Edit “${pg.name}”? Its exercises replace your current plan so you can change them. Logged sets are kept.${isPre?" A copy is saved under Saved programmes.":""} Tap “Save plan as programme” when you’re done.`,"Edit programme",()=>{
     let g=pg;
     if(isPre){ g=state.programmes.find(x=>x.name.toLowerCase()===pg.name.toLowerCase())||saveProgramme(pg.name,pg.plan,false,opt.weeks||pg.weeks); }
     applyProgramme(g); state.block.progId=g.id; if(opt.weeks||g.weeks) state.block.weeks=Math.min(12,Math.max(1,parseInt(opt.weeks||g.weeks)||12));
     clampPos(); state.tab="plan"; state.planOpen="A"; save(); toast("Editing “"+pg.name+"”"); render();
   });
+}
+/* Switch one exercise from the Train page. Past weeks keep the old name (stamped on their log rows). */
+function switchFlow(slot){
+  const {m,w,s}=state.pos, old=exAt(s,m,w,slot), p=slotPlan(s,m,slot);
+  const d=dlgOpen(`<p class="dmsg">Switch <b>${esc(old)}</b> to:</p>
+    <select id="sw-sel" class="dinput">${libOptions("","")}</select>
+    <input id="sw-new" class="dinput" placeholder="…or type a new exercise" style="margin-top:8px">
+    <div class="dcol" style="margin-top:12px">
+      <button class="btn primary" id="sw-blk">Switch for the rest of the block<span class="sub">This week and every later week. Past weeks keep ${esc(old)}.</span></button>
+      <button class="btn" id="sw-one">Just this week<span class="sub">Later weeks stay as planned.</span></button>
+      <button class="btn ghost" id="dlg-no">Cancel</button></div>`);
+  $("#dlg-no").onclick=()=>d.close();
+  const pick=()=>{ const t=$("#sw-new").value.trim(), v=t||$("#sw-sel").value; if(!v){ toast("Pick an exercise first"); return null; } return v; };
+  const finish=nw=>{
+    if(!Object.values(state.library).some(a=>a.some(x=>normName(x)===normName(nw)))){ const g=MUSCLES.includes(p.grp)?p.grp:"Other"; (state.library[g]=state.library[g]||[]).push(nw); }
+    d.close(); entry=null; renderDock(); save(); toast("Switched to “"+nw+"”"); render();
+  };
+  $("#sw-one").onclick=()=>{ const nw=pick(); if(!nw) return; rowLog(m,w,s,slot,true).ex=nw; finish(nw); };
+  $("#sw-blk").onclick=()=>{ const nw=pick(); if(!nw) return;
+    for(let ww=1;ww<w;ww++){ const rl=rowLog(m,ww,s,slot,false); if(rl&&!rl.ex&&(rl.sets||[]).some(x=>okSet(x))) rl.ex=slotPlan(s,m,slot).ex; }
+    const oldPlanEx=p.ex; for(let mm=m;mm<=MONTHS();mm++){ const q=slotPlan(s,mm,slot); if(mm===m||q.ex===oldPlanEx){ q.ex=nw; q.grp=findGroup(nw)||q.grp; } }
+    const rl=rowLog(m,w,s,slot,false); if(rl) delete rl.ex;
+    finish(nw); };
 }
 function endBlockFlow(){
   const st=blockStats(state.plan,state.logs);
@@ -1802,7 +1830,7 @@ function confirmDlg(msg,okLabel,cb){
   $("#dlg-no").onclick=()=>d.close(); $("#dlg-yes").onclick=()=>{ d.close(); cb(); };
 }
 function choiceDlg(msg,choices){
-  const d=dlgOpen(`<p class="dmsg">${esc(msg)}</p><div class="dcol">${choices.map((c,i)=>`<button class="btn${c.primary?" primary":""}" data-ch="${i}">${esc(c.label)}</button>`).join("")}<button class="btn ghost" id="dlg-no">Cancel</button></div>`);
+  const d=dlgOpen(`<p class="dmsg">${esc(msg)}</p><div class="dcol">${choices.map((c,i)=>`<button class="btn${c.primary?" primary":""}" data-ch="${i}">${esc(c.label)}${c.sub?`<span class="sub">${esc(c.sub)}</span>`:""}</button>`).join("")}<button class="btn ghost" id="dlg-no">Cancel</button></div>`);
   $("#dlg-no").onclick=()=>d.close();
   d.querySelectorAll("[data-ch]").forEach(b=>b.onclick=()=>{ d.close(); choices[+b.dataset.ch].fn(); });
 }
@@ -2036,7 +2064,7 @@ function trainHTML(){
   const L=getLog(m,w,s,false);
   let cards="";
   for(const sl of SLOTS){
-    const p=slotPlan(s,m,sl.id);
+    const p0=slotPlan(s,m,sl.id), exw=exAt(s,m,w,sl.id), p=exw===p0.ex?p0:Object.assign({},p0,{ex:exw});
     if(!p.ex) continue;
     const rx=rxFor(s,m,w,sl.id);
     const rl=rowLog(m,w,s,sl.id,false)||{sets:[],note:"",extra:0};
@@ -2074,7 +2102,7 @@ function trainHTML(){
           <div class="exname">${esc(p.ex)}</div>
           <div class="rx num">${rx.sets} × ${esc(rx.reps)} reps${rx.showRpe?" · RPE <b>"+rx.rpe+"</b>":""}${rx.pct?" · % of 1RM":""}</div>
         </div>
-        <label class="restchip">${TIMER_SVG}<select data-rest="${sl.id}" aria-label="Rest timer for ${esc(p.ex)}">${REST_OPTS.map(([v,l])=>`<option value="${v}" ${v===restOf(p)?"selected":""}>${l}</option>`).join("")}</select></label>
+        <button class="swbtn" data-switch="${sl.id}" aria-label="Switch exercise for ${esc(p.ex)}">⇄ Switch</button><label class="restchip">${TIMER_SVG}<select data-rest="${sl.id}" aria-label="Rest timer for ${esc(p.ex)}">${REST_OPTS.map(([v,l])=>`<option value="${v}" ${v===restOf(p)?"selected":""}>${l}</option>`).join("")}</select></label>
       </div>
       ${hint}
       <div class="stable">
@@ -2501,7 +2529,7 @@ function loggedExercises(){
     const L=getLog(m,w,s,false); if(!L) continue;
     for(const sl of SLOTS){
       const r=L.rows[sl.id];
-      if(r&&Array.isArray(r.sets)&&r.sets.some(x=>okSet(x)&&parseFloat(x.w)>0)){ const ex=slotPlan(s,m,sl.id).ex; if(ex) set.add(ex); }
+      if(r&&Array.isArray(r.sets)&&r.sets.some(x=>okSet(x)&&parseFloat(x.w)>0)){ const ex=exAt(s,m,w,sl.id); if(ex) set.add(ex); }
     }
   }
   return [...set].sort();
@@ -2511,7 +2539,7 @@ function trendPoints(ex){
   for(let m=1;m<=3;m++) for(let w=1;w<=4;w++){
     let best=null,sets=0;
     for(const s of SESSIONS) for(const sl of SLOTS){
-      if(slotPlan(s,m,sl.id).ex!==ex) continue;
+      if(exAt(s,m,w,sl.id)!==ex) continue;
       const r=rowLog(m,w,s,sl.id,false); if(!r||!Array.isArray(r.sets)) continue;
       for(const x of r.sets){ if(!okSet(x)) continue; const wt=parseFloat(x.w); if(!(wt>0)) continue; if(best==null||wt>best) best=wt; sets++; }
     }
@@ -2698,6 +2726,7 @@ function wire(){
       if(entry&&entry.slot===slot){ entry=null; renderDock(); }
       save(); rerender();
     }));
+    v.querySelectorAll("[data-switch]").forEach(b=>b.addEventListener("click",()=>switchFlow(b.dataset.switch)));
     v.querySelectorAll("[data-rest]").forEach(sel=>sel.addEventListener("change",()=>{ slotPlan(s,m,sel.dataset.rest).rest=+sel.value; save(); }));
     v.querySelectorAll("[data-note]").forEach(inp=>inp.addEventListener("change",()=>{ rowLog(m,w,s,inp.dataset.note,true).note=inp.value; save(); }));
     v.querySelectorAll("[data-orm]").forEach(inp=>inp.addEventListener("change",()=>{
