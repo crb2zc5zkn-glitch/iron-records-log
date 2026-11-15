@@ -391,6 +391,49 @@ dialog::backdrop{background:rgba(10,10,14,.5)}
 .mrow b{text-align:right}
 .mbar{height:8px; border-radius:4px; background:var(--card2); overflow:hidden}
 .mbar i{display:block; height:100%; background:var(--accent-fill); border-radius:4px}
+
+/* ---- Food tab ---- */
+:root{--c-protein:var(--accent-fill); --c-carb:#E0A93C; --c-fat:#E57B5B}
+.food label{display:block; font-size:12px; color:var(--muted)}
+.food label>input,.food label>select{display:block; width:100%; margin-top:5px; min-height:44px; font-size:16px}
+.food select,.food input{min-height:44px}
+.fd-sub{margin:4px 0 10px}
+.fd-seg{display:flex; background:var(--card2); border-radius:11px; padding:3px; gap:3px}
+.fd-seg button{flex:1; padding:10px 6px; border-radius:9px; color:var(--muted); font-weight:700; font-size:14px; min-height:40px}
+.fd-seg button[aria-pressed="true"]{background:var(--card); color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.fd-hero{text-align:center}
+.fd-big{font-size:54px; font-weight:800; letter-spacing:-.03em; line-height:1.05; margin-top:6px}
+.fd-big small{font-size:18px; color:var(--muted); font-weight:500; letter-spacing:0; margin-left:6px}
+.fd-pill{display:inline-flex; align-items:center; gap:8px; border:1px solid var(--line); border-radius:999px; padding:6px 14px; font-weight:700; margin:10px 0 4px}
+.fd-dot{display:inline-block; width:9px; height:9px; border-radius:50%}
+.fd-hero .fd-seg{margin-top:12px}
+.fd-tiles{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px}
+.fd-tile{background:var(--card2); border-radius:12px; padding:12px 4px}
+.fd-tile b{display:block; font-size:24px; font-weight:800}
+.fd-tile b small{font-size:13px; color:var(--muted); font-weight:500}
+.fd-tile span{display:block; font-size:11px; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); margin-top:3px}
+.fd-tile em{display:block; font-style:normal; font-size:12.5px; color:var(--muted)}
+.fd-note{background:var(--accent-soft); border-radius:11px; padding:10px 12px; color:var(--muted); margin-top:12px; font-size:13.5px}
+.fd-datebar{display:flex; align-items:center; justify-content:space-between; gap:10px; margin:6px 0 4px}
+.fd-datebar b{font-size:17px}
+.fd-datebar .btn{min-width:44px; min-height:44px; font-size:20px; line-height:1}
+.fd-head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; flex-wrap:wrap}
+.fd-tag{font-weight:700; font-size:14px; color:var(--accent)} .fd-tag.bad,.food .over{color:var(--prim,#C2412D)}
+.fd-m{margin-top:12px} .fd-line{display:flex; justify-content:space-between; align-items:baseline; gap:10px; font-size:15px} .fd-line span:last-child{font-weight:700}
+.fd-bar{height:7px; background:var(--card2); border-radius:99px; overflow:hidden; margin-top:6px} .fd-bar i{display:block; height:100%; border-radius:99px}
+.fd-btns{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:14px}
+.fd-btns .btn{display:flex; align-items:center; justify-content:center; gap:5px; min-height:46px} .fd-btns svg,.fd-head .btn svg{width:15px; height:15px}
+.fd-panel{margin-top:12px; border-top:1px solid var(--line); padding-top:12px}
+.fd-form{display:grid; grid-template-columns:1fr 1fr; gap:10px} .fd-form .full{grid-column:1/-1}
+@media(max-width:380px){.fd-form{grid-template-columns:1fr}}
+.fd-list{list-style:none; margin:0; padding:0} .fd-list li{display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 0; border-top:1px solid var(--line)} .fd-list li:first-child{border-top:0}
+.fd-list li>div{min-width:0} .fd-name{font-weight:700}
+.fd-list .btn.danger{padding:5px 10px; font-size:12.5px; flex:none}
+.fd-sum{cursor:pointer; font-weight:700; padding:2px 0}
+.fd-lbl{display:block; font-size:12px; color:var(--muted)} .fd-lbl input{display:block; margin-top:5px}
+.fd-tiles2{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+.fd-stat{background:var(--card2); border-radius:12px; padding:12px} .fd-stat b{display:block; font-size:22px; font-weight:800} .fd-stat span{font-size:12px; color:var(--muted)}
+.fd-t{width:100%; border-collapse:collapse; font-size:14px} .fd-t th{font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); text-align:right; padding:6px 4px; white-space:nowrap} .fd-t td{text-align:right; padding:9px 4px; border-top:1px solid var(--line); font-variant-numeric:tabular-nums} .fd-t th:first-child,.fd-t td:first-child{text-align:left; font-weight:600}
 </style>
 </head>
 <body>
@@ -417,6 +460,7 @@ dialog::backdrop{background:rgba(10,10,14,.5)}
   <button data-tab="train" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12h3M19 12h3M6 8v8M18 8v8M9 5v14M15 5v14M9 12h6"/></svg>Train</button>
   <button data-tab="plan" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 5h16M4 12h16M4 19h10"/><circle cx="19" cy="19" r="2.4"/></svg>Plan</button>
   <button data-tab="prog" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19V9M10 19V4M16 19v-7M21 19H3"/></svg>Progress</button>
+  <button data-tab="food" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3v7a2 2 0 0 0 4 0V3M9 10v11M17 21V3c-2.2 1.2-3 4.5-3 8s1 4 3 4"/></svg>Food</button>
   <button data-tab="lib" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4v16H5zM11 4h4v16h-4zM17 6l4 1-3.5 14-4-1z"/></svg>Library</button>
   <button data-tab="data" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6"/><path d="M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/></svg>Data</button>
 </div></nav>
@@ -1414,6 +1458,372 @@ const TIER_DEF = {
 };
 
 /* ================= state ================= */
+/* ================= FOOD: macro tracker, merged in from the Macro Tracker artifact =================
+   Phase engine, UK food list and rules come from that app unchanged. Data lives in state.food. */
+const Food=(function(){
+"use strict";
+const LB_KG = 0.45359237, CM_IN = 2.54;
+const ACTIVITY = [[1.2,'Sedentary'],[1.375,'Light'],[1.55,'Moderate'],[1.725,'Active']];
+const PHASE_ORDER = ['nuclear','aggressive','maintenance','lean','deload'];
+const PHASES = {
+  nuclear:{label:'Nuclear Cut', unit:'days', max:2, pct:52, protein:1.4, fat:{train:25, rest:25}, restOnly:true,
+    rule:'Rest days only. 2 days max, once a month. Reintroduce calories over 3–4 days afterwards.'},
+  aggressive:{label:'Aggressive Cut', unit:'weeks', max:6, warnAt:5, pct:70, protein:1.3, fat:{train:21, rest:46},
+    rule:'4–6 weeks max. Carbs up on training days, fat up on rest days. Transition to maintenance before a lean bulk.'},
+  maintenance:{label:'Maintenance', unit:'weeks', max:null, pct:100, protein:1.0, fat:{train:44, rest:96},
+    rule:'Flexible. Use between phases or during a deload. Resets hunger hormones.'},
+  lean:{label:'Lean Bulk', unit:'weeks', max:16, warnAt:14, pct:110, protein:0.9, fat:{train:41, rest:112},
+    rule:'Max 16 weeks. Carb cycle daily. Keep waist gain to 0.5 lb a week or less.'},
+  deload:{label:'Deload', unit:'weeks', max:2, pct:100, protein:1.0, fat:{train:44, rest:96},
+    rule:'1–2 weeks at 100% of maintenance. Cut training volume by about 40%. Protein and fat follow maintenance (assumed; not in the sheet).'}
+};
+const DEFAULT_LEN = {nuclear:2, aggressive:6, maintenance:4, lean:12, deload:2};
+
+/* ---------- UK whole-food database ----------
+   Values are per 100 g (drinks per 100 ml), approximate, from typical UK composition tables.
+   Each row: name, category, kcal, protein g, carbs g, fat g, [countable unit name, grams per unit].
+   Countable units let an entry be logged as a number, for example 3 eggs. Check values against a label
+   where it matters. */
+const CATS = ['Protein','Dairy','Carbs','Fruit','Veg','Pulses','Nuts & fats','Other'];
+const UK_FOODS = [
+  ['Chicken breast, cooked','Protein',165,31,0,3.6],
+  ['Chicken thigh, cooked, skinless','Protein',209,26,0,10.9],
+  ['Turkey breast, cooked','Protein',135,30,0,1],
+  ['Beef mince, 5% fat, cooked','Protein',176,29,0,6],
+  ['Pork loin, roast, lean','Protein',190,30,0,8],
+  ['Salmon, cooked','Protein',206,22,0,13],
+  ['Cod, cooked','Protein',105,23,0,0.9],
+  ['Tuna, tinned in brine, drained','Protein',116,26,0,1],
+  ['Prawns, cooked','Protein',99,24,0.2,0.3],
+  ['Egg, large','Protein',143,12.6,0.7,9.5,'egg',55],
+  ['Egg white','Protein',52,11,0.7,0.2,'egg white',33],
+  ['Tofu, firm','Protein',144,15.5,2.8,8.7],
+  ['Semi-skimmed milk','Dairy',46,3.4,4.8,1.7],
+  ['Skimmed milk','Dairy',34,3.4,5,0.1],
+  ['Whole milk','Dairy',61,3.2,4.8,3.3],
+  ['Greek yogurt, 0% fat','Dairy',57,10.2,3.6,0.4],
+  ['Natural yogurt, whole milk','Dairy',61,3.5,4.7,3.3],
+  ['Cottage cheese','Dairy',98,11,3.4,4.3],
+  ['Cheddar cheese','Dairy',403,25,1.3,33,'slice',20],
+  ['Butter, salted','Other',717,0.9,0.1,81,'tsp',5],
+  ['Rolled oats, dry','Carbs',389,16.9,66,6.9],
+  ['Porridge, made with water','Carbs',71,2.5,12,1.5],
+  ['White rice, cooked','Carbs',130,2.7,28,0.3],
+  ['Brown rice, cooked','Carbs',123,2.7,26,1],
+  ['Pasta, cooked','Carbs',158,5.8,31,0.9],
+  ['Couscous, cooked','Carbs',112,3.8,23.2,0.2],
+  ['Quinoa, cooked','Carbs',120,4.4,21,1.9],
+  ['Potato, boiled','Carbs',87,1.9,20,0.1],
+  ['Potato, baked, flesh','Carbs',93,2.5,21,0.1,'potato',200],
+  ['Sweet potato, baked','Carbs',90,2,21,0.1,'sweet potato',150],
+  ['Wholemeal bread','Carbs',240,10,41,3,'slice',36],
+  ['White bread','Carbs',265,9,49,3.2,'slice',36],
+  ['Wheat tortilla wrap','Carbs',300,8.6,50,7.1,'wrap',45],
+  ['Banana','Fruit',89,1.1,23,0.3,'banana',118],
+  ['Apple','Fruit',52,0.3,14,0.2,'apple',112],
+  ['Orange','Fruit',47,0.9,12,0.1,'orange',130],
+  ['Pear','Fruit',57,0.4,15,0.1,'pear',166],
+  ['Kiwi fruit','Fruit',61,1.1,14.7,0.5,'kiwi',76],
+  ['Strawberries','Fruit',32,0.7,7.7,0.3],
+  ['Blueberries','Fruit',57,0.7,14,0.3],
+  ['Grapes','Fruit',69,0.7,18,0.2],
+  ['Avocado flesh','Fruit',160,2,8.5,14.7,'half avocado',70],
+  ['Broccoli, raw','Veg',34,2.8,7,0.4],
+  ['Spinach, raw','Veg',23,2.9,3.6,0.4],
+  ['Carrots, raw','Veg',41,0.9,9.6,0.2,'carrot',61],
+  ['Tomato','Veg',18,0.9,3.9,0.2,'tomato',90],
+  ['Red pepper','Veg',31,1,6,0.3,'pepper',120],
+  ['Onion','Veg',40,1.1,9,0.1,'onion',150],
+  ['Mushrooms, raw','Veg',22,3.1,3.3,0.5],
+  ['Cucumber','Veg',15,0.7,3.6,0.1],
+  ['Courgette','Veg',17,1.2,3.1,0.3],
+  ['Peas, frozen, cooked','Veg',81,5.4,14,0.4],
+  ['Lentils, cooked','Pulses',116,9,20,0.4],
+  ['Chickpeas, cooked','Pulses',164,8.9,27,2.6],
+  ['Black beans, cooked','Pulses',132,8.9,24,0.5],
+  ['Almonds','Nuts & fats',579,21,22,50,'handful',25],
+  ['Walnuts','Nuts & fats',654,15,14,65,'handful',25],
+  ['Peanut butter','Nuts & fats',588,25,20,50,'tbsp',16],
+  ['Olive oil','Nuts & fats',884,0,0,100,'tbsp',13.5],
+  ['Hummus','Other',166,8,14,9.6,'tbsp',15],
+  ['Whey protein powder','Other',370,80,7,5,'scoop',30],
+  ['Coffee, black, per 100 ml','Other',2,0.3,0,0]
+];
+function ukId(name){ return 'uk-'+name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
+function ukFood(row){
+  return {id:ukId(row[0]), name:row[0], cat:row[1], k:row[2], p:row[3], c:row[4], f:row[5],
+          unit: row[6] ? {name:row[6], g:row[7]} : null};
+}
+
+const PHASE_COL={nuclear:"#D9482B",aggressive:"#E07A3F",maintenance:"#3E9B6A",lean:"#3A78D6",deload:"#7A68D6"};
+
+/* ---------- helpers ---------- */
+function num(v,d){ const n=parseFloat(v); return isFinite(n)?n:(d||0); }
+const r0=n=>Math.round(n), f1=n=>(Math.round(n*10)/10).toFixed(1), pad=n=>(n<10?"0":"")+n;
+const iso=dt=>dt.getFullYear()+"-"+pad(dt.getMonth()+1)+"-"+pad(dt.getDate());
+function addDays(s,n){ const d=new Date(s+"T12:00:00"); d.setDate(d.getDate()+n); return iso(d); }
+function dayDiff(a,b){ return Math.round((new Date(b+"T12:00:00")-new Date(a+"T12:00:00"))/86400000); }
+const fmtShort=s=>new Date(s+"T12:00:00").toLocaleDateString(undefined,{day:"numeric",month:"short"});
+const wkday=s=>new Date(s+"T12:00:00").toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"});
+function sortBy(l,k){ return l.slice().sort((a,b)=>a[k]<b[k]?-1:a[k]>b[k]?1:0); }
+function isoWeek(s){ const d=new Date(s+"T12:00:00"), day=(d.getDay()+6)%7; d.setDate(d.getDate()-day+3); const thu=new Date(d.getFullYear(),0,4); return 1+Math.round(((d-thu)/86400000-3+((thu.getDay()+6)%7))/7); }
+const mondayOf=s=>addDays(s,-((new Date(s+"T12:00:00").getDay()+6)%7));
+function plural(u,n){ if(n===1) return u; if(u==="half avocado") return "half avocados"; if(u==="tbsp"||u==="tsp") return u; if(u==="scoop") return "scoops"; return u+"s"; }
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+const fid=()=>Math.random().toString(36).slice(2,10);
+
+/* ---------- data ---------- */
+function blank(){ return {v:1,profile:null,plan:[],days:{},weights:[],delw:[],meals:[],foods:UK_FOODS.map(ukFood)}; }
+function normProfile(p){
+  if(!p) return null;
+  const inches=Math.round((p.heightFt!=null)?(num(p.heightFt)*12+num(p.heightIn)):(num(p.heightCm,0)/CM_IN));
+  return {sex:p.sex==="m"?"m":"f",age:num(p.age,35),heightFt:Math.floor(inches/12),heightIn:inches%12,activity:num(p.activity,1.375),fallback:PHASES[p.fallback]?p.fallback:"maintenance"};
+}
+function fix(f){
+  const d=blank(); if(!f||typeof f!=="object") return d;
+  const o=Object.assign(d,f);
+  o.plan=o.plan||[]; o.days=o.days||{}; o.weights=o.weights||[]; o.delw=o.delw||[]; o.meals=o.meals||[]; o.foods=(o.foods&&o.foods.length)?o.foods:d.foods;
+  o.profile=normProfile(o.profile); return o;
+}
+const F=()=>state.food;
+function has(f){ return !!(f&&((f.weights||[]).length||Object.keys(f.days||{}).some(k=>(f.days[k].items||[]).length)||(f.meals||[]).length||(f.plan||[]).length||f.profile)); }
+/* what syncs as one unit, and how a merge treats each part (see mergeDocs) */
+function cfg(){ const f=F(); return {profile:f.profile,plan:f.plan,meals:f.meals,foods:f.foods}; }
+function merge(L,R,sl,sr){
+  L=fix(L); R=fix(R); sl=sl||{}; sr=sr||{};
+  const base=(sl.fcfg||0)>=(sr.fcfg||0)?L:R, out={v:1,profile:base.profile,plan:base.plan,meals:base.meals,foods:base.foods};
+  out.delw=[...new Set([...(L.delw||[]),...(R.delw||[])])];
+  const wm=new Map(); for(const w of [...L.weights,...R.weights]) if(!out.delw.includes(w.id)&&!wm.has(w.id)) wm.set(w.id,w);
+  out.weights=[...wm.values()];
+  out.days={}; const dl=sl.fdays||{}, dr=sr.fdays||{};
+  for(const k of new Set([...Object.keys(L.days),...Object.keys(R.days)])){
+    const a=L.days[k], b=R.days[k]; out.days[k]=(!b||(a&&(dl[k]||0)>=(dr[k]||0)))?a:b;
+  }
+  return JSON.parse(JSON.stringify(out));
+}
+/* bring in a backup from the old Macro Tracker artifact without overwriting anything already here */
+function importLegacy(txt){
+  let j; try{ j=JSON.parse(txt); }catch(e){ return {err:"That isn't valid backup text."}; }
+  if(!j||typeof j!=="object"||(!j.diary&&!j.weights&&!j.meals&&!j.days)) return {err:"That doesn't look like a Macro Tracker backup."};
+  const f=F(); let n={days:0,w:0,m:0,f:0,b:0};
+  const days=j.days||{}; if(j.diary) for(const d in j.diary) days[d]={items:j.diary[d],type:(j.dayType||{})[d]||""};
+  for(const d in days){ const it=(days[d].items||[]); if(!it.length) continue; if(!f.days[d]||!(f.days[d].items||[]).length){ f.days[d]={items:it,type:days[d].type||""}; n.days++; } }
+  for(const w of (j.weights||[])) if(!f.weights.some(x=>x.id===w.id)&&!f.delw.includes(w.id)){ f.weights.push(w); n.w++; }
+  for(const m of (j.meals||[])) if(!f.meals.some(x=>x.id===m.id)){ f.meals.push(m); n.m++; }
+  for(const x of (j.foods||[])) if(!f.foods.some(y=>y.id===x.id||y.name.toLowerCase()===String(x.name).toLowerCase())){ f.foods.push(x); n.f++; }
+  for(const b of (j.plan||[])) if(!f.plan.some(x=>x.id===b.id)){ f.plan.push(b); n.b++; }
+  if(!f.profile&&j.profile) f.profile=normProfile(j.profile);
+  return n;
+}
+
+/* ---------- UI state (not saved) ---------- */
+const U={sub:"today",date:null,panel:null,draft:[],building:false,addingFood:false,pickId:null,pickUnit:"g",pickQty:""};
+const today=()=>todayISO();
+U.date=today();
+
+/* ---------- foods, entries, totals ---------- */
+function sumEntries(l){ return (l||[]).reduce((a,e)=>{ const m=e.g/100; a.k+=e.k*m; a.p+=e.p*m; a.c+=e.c*m; a.f+=e.f*m; return a; },{k:0,p:0,c:0,f:0}); }
+const foodById=id=>F().foods.find(f=>f.id===id)||null;
+function sortedFoods(){ return F().foods.slice().sort((a,b)=>{ const ca=CATS.indexOf(a.cat),cb=CATS.indexOf(b.cat); if(ca!==cb) return (ca<0?99:ca)-(cb<0?99:cb); return a.name<b.name?-1:a.name>b.name?1:0; }); }
+function makeEntry(food,unit,qty){ const cnt=unit==="unit"&&food.unit, g=cnt?qty*food.unit.g:qty, e={n:food.name,g,k:food.k,p:food.p,c:food.c,f:food.f}; if(cnt){ e.q=qty; e.u=food.unit.name; } return e; }
+const amountLabel=e=>e.u?e.q+" "+plural(e.u,e.q):r0(e.g)+" g";
+const items=d=>(F().days[d]&&F().days[d].items)||[];
+function setItems(d,list){ const r=F().days[d]||(F().days[d]={items:[],type:""}); r.items=list; }
+function latestWeight(){ const ws=sortBy(F().weights,"d"); return ws.length?ws[ws.length-1].lb:null; }
+
+/* ---------- phase logic ---------- */
+const lenDays=b=>PHASES[b.phase].unit==="days"?b.len:b.len*7;
+const endOf=b=>addDays(b.start,lenDays(b));
+function calcTargets(key,dt,w,p){
+  const pd=PHASES[key], kg=w*LB_KG, inches=p.heightFt*12+p.heightIn;
+  const bmr=r0(10*kg+6.25*(inches*CM_IN)-5*p.age+(p.sex==="m"?5:-161)), tdee=r0(bmr*p.activity), kcal=r0(tdee*pd.pct/100), protein=r0(pd.protein*w);
+  const type=pd.restOnly?"rest":dt, fat=pd.fat[type], carbs=Math.max(0,r0((kcal-protein*4-fat*9)/4));
+  const pc=kcal?{p:r0(protein*4/kcal*100),f:r0(fat*9/kcal*100),c:r0(carbs*4/kcal*100)}:{p:0,f:0,c:0};
+  return {bmr,tdee,kcal,protein,fat,carbs,type,pc};
+}
+function blockFor(d){ for(const b of sortBy(F().plan,"start")) if(d>=b.start&&d<endOf(b)) return b; return null; }
+function targetsFor(d){
+  const f=F(), block=blockFor(d), key=block?block.phase:(f.profile?f.profile.fallback:"maintenance");
+  const rec=f.days[d], dt=PHASES[key].restOnly?"rest":((rec&&rec.type)||"train"), w=latestWeight();
+  const out={key,block,dayType:dt,ready:false};
+  if(f.profile&&w!=null){ out.ready=true; out.weight=w; Object.assign(out,calcTargets(key,dt,w,f.profile)); }
+  return out;
+}
+function blockPosition(b,d){ const n=dayDiff(b.start,d); return PHASES[b.phase].unit==="days"?"Day "+(n+1)+" of "+b.len:"Week "+(Math.floor(n/7)+1)+" of "+b.len; }
+
+/* ---------- view pieces ---------- */
+const ICON_BOLT='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>';
+const ICON_PLUS='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
+const pill=k=>'<span class="fd-pill"><span class="fd-dot" style="background:'+PHASE_COL[k]+'"></span>'+PHASES[k].label+'</span>';
+const barH=(v,t,c)=>'<div class="fd-bar"><i style="width:'+(t>0?Math.min(100,v/t*100):0).toFixed(1)+'%;background:'+c+'"></i></div>';
+const phaseOptions=sel=>PHASE_ORDER.map(k=>'<option value="'+k+'"'+(k===sel?" selected":"")+'>'+PHASES[k].label+'</option>').join("");
+function foodOptions(sel){
+  let out="",cur=null;
+  sortedFoods().forEach(f=>{ const c=f.cat||"Other"; if(c!==cur){ if(cur!==null) out+="</optgroup>"; out+='<optgroup label="'+esc(c)+'">'; cur=c; } out+='<option value="'+esc(f.id)+'"'+(f.id===sel?" selected":"")+'>'+esc(f.name)+'</option>'; });
+  return out+(cur!==null?"</optgroup>":"");
+}
+function currentPick(){ let f=foodById(U.pickId); if(!f){ f=sortedFoods()[0]; U.pickId=f?f.id:null; } return f; }
+function pickControls(act,label){
+  const f=currentPick(); if(!f) return '<p class="hint">Add a food first (Foods tab).</p>';
+  const useUnit=U.pickUnit==="unit"&&f.unit;
+  const seg='<div class="fd-seg" role="group" aria-label="Amount type"><button data-fa="setUnit" data-u="g" aria-pressed="'+(!useUnit)+'">Grams</button>'+(f.unit?'<button data-fa="setUnit" data-u="unit" aria-pressed="'+(!!useUnit)+'">'+esc(cap(plural(f.unit.name,2)))+'</button>':"")+'</div>';
+  return '<div class="fd-form"><label class="full">Food<select id="fd-pfood" data-fc="pickFood">'+foodOptions(f.id)+'</select></label><div class="full">'+seg+'</div>'+
+    '<label class="full">'+(useUnit?cap(plural(f.unit.name,2)):"Grams")+'<input id="fd-pqty" type="number" inputmode="decimal" min="0" step="any" value="'+esc(U.pickQty)+'" data-fc="pickQty" placeholder="'+(useUnit?"e.g. 3":"e.g. 150")+'"></label>'+
+    (useUnit?'<p class="hint full" style="margin:-4px 0 0">1 '+esc(f.unit.name)+' ≈ '+f.unit.g+' g</p>':"")+
+    '<div class="full"><button class="btn primary wide" data-fa="'+act+'">'+label+'</button></div></div>';
+}
+function subnav(){
+  const t=[["today","Today"],["meals","Meals"],["foods","Foods"],["targets","Targets"]];
+  return '<div class="fd-seg fd-sub" role="tablist">'+t.map(x=>'<button data-fa="sub" data-s="'+x[0]+'" aria-pressed="'+(U.sub===x[0])+'">'+x[1]+'</button>').join("")+'</div>';
+}
+
+/* ---------- Today ---------- */
+function vToday(){
+  const f=F(), d=U.date, t=targetsFor(d), list=items(d), tot=sumEntries(list), pd=PHASES[t.key], isT=d===today();
+  let h='<div class="fd-datebar"><button class="btn" data-fa="shiftDay" data-n="-1" aria-label="Previous day">‹</button><b class="disp">'+(isT?"Today · ":"")+esc(wkday(d))+'</b><button class="btn" data-fa="shiftDay" data-n="1" aria-label="Next day">›</button></div>';
+  const pos=t.block?blockPosition(t.block,d):"no phase logged, showing "+pd.label;
+  h+='<section class="card fd-hero"><div class="hint">Week '+isoWeek(d)+' · w/c '+fmtShort(mondayOf(d))+' · '+esc(pos)+'</div>'+
+     '<div class="fd-big num">'+(t.ready?t.kcal.toLocaleString():"—")+'<small>kcal target</small></div>'+pill(t.key);
+  if(pd.restOnly) h+='<div class="fd-note">Rest days only in a Nuclear Cut.</div>';
+  else h+='<div class="fd-seg" role="group" aria-label="Day type"><button data-fa="dayType" data-type="train" aria-pressed="'+(t.dayType==="train")+'">Training day</button><button data-fa="dayType" data-type="rest" aria-pressed="'+(t.dayType==="rest")+'">Rest day</button></div>';
+  if(t.ready) h+='<div class="fd-tiles"><div class="fd-tile"><b class="num">'+t.protein+'<small>g</small></b><span>Protein</span><em>'+t.pc.p+'%</em></div><div class="fd-tile"><b class="num">'+t.fat+'<small>g</small></b><span>Fat</span><em>'+t.pc.f+'%</em></div><div class="fd-tile"><b class="num">'+t.carbs+'<small>g</small></b><span>Carbs</span><em>'+t.pc.c+'%</em></div></div>';
+  else h+='<div class="fd-note">Set your details in <b>Targets</b> and log a weigh-in to see daily goals.</div>';
+  h+='<div class="fd-note">'+esc(pd.rule)+'</div></section>';
+
+  const left=t.ready?t.kcal-tot.k:null;
+  h+='<section class="card"><div class="fd-head"><div class="sect disp" style="margin:0">Food</div>'+(t.ready?'<span class="fd-tag'+(left<0?" bad":"")+'">'+(left<0?r0(-left).toLocaleString()+" kcal over":r0(left).toLocaleString()+" kcal left")+'</span>':"")+'</div>';
+  if(t.ready){
+    const m=(lbl,v,tg,unit,c,dec)=>'<div class="fd-m"><div class="fd-line"><span>'+lbl+'</span><span class="num'+(v>tg?" over":"")+'">'+(dec?f1(v):r0(v))+' / '+tg.toLocaleString()+unit+'</span></div>'+barH(v,tg,c)+'</div>';
+    h+=m("Calories",tot.k,t.kcal," kcal","var(--ink)",0)+m("Protein",tot.p,t.protein,"g","var(--c-protein)",1)+m("Fat",tot.f,t.fat,"g","var(--c-fat)",1)+m("Carbs",tot.c,t.carbs,"g","var(--c-carb)",1);
+  }
+  if(list.length) h+='<ul class="fd-list" style="margin-top:16px">'+list.map((e,i)=>{ const m=sumEntries([e]); return '<li><div><div class="fd-name">'+esc(e.n)+' <span class="hint">· '+esc(amountLabel(e))+'</span></div><div class="hint num">'+r0(m.k)+' kcal · P '+f1(m.p)+' · C '+f1(m.c)+' · F '+f1(m.f)+'</div></div><button class="btn danger" data-fa="delEntry" data-idx="'+i+'" aria-label="Remove '+esc(e.n)+'">Remove</button></li>'; }).join("")+'</ul>';
+  else h+='<p class="hint" style="margin-top:14px">Nothing logged yet. Add a meal, quick-add a food, or ask for a suggestion.</p>';
+  h+='<div class="fd-btns"><button class="btn'+(U.panel==="meal"?" primary":"")+'" data-fa="panel" data-name="meal">'+ICON_PLUS+'Meal</button><button class="btn'+(U.panel==="quick"?" primary":"")+'" data-fa="panel" data-name="quick">'+ICON_PLUS+'Quick add</button><button class="btn'+(U.panel==="suggest"?" primary":"")+'" data-fa="panel" data-name="suggest">'+ICON_BOLT+'Suggest</button></div>';
+  if(U.panel) h+='<div class="fd-panel">'+todayPanel(t,tot,left)+'</div>';
+  h+='</section>';
+
+  const ws=sortBy(f.weights,"d"), lw=ws.length?ws[ws.length-1]:null;
+  h+='<section class="card"><div class="fd-head"><div class="sect disp" style="margin:0">Weigh-in</div>'+(lw?'<span class="hint">Last '+f1(lw.lb)+' lb on '+fmtShort(lw.d)+'</span>':"")+'</div>'+
+     '<div class="formline"><input id="fd-wlb" class="grow" type="number" inputmode="decimal" step="0.1" min="1" placeholder="Weight (lb)" aria-label="Weight in pounds" style="flex:1;min-width:110px"><input id="fd-wdate" type="date" value="'+today()+'" aria-label="Date"><button class="btn primary" data-fa="addWeight">Save</button></div>'+
+     '<p class="hint" style="margin-top:8px">Log every Monday morning. Targets update automatically.</p>'+
+     (ws.length?'<details style="margin-top:8px"><summary class="hint" style="cursor:pointer">Recent weigh-ins ('+ws.length+')</summary><ul class="fd-list">'+ws.slice().reverse().slice(0,12).map(w=>'<li><span class="num">'+esc(fmtShort(w.d))+'</span><span><b class="num">'+f1(w.lb)+' lb</b> <button class="btn danger" data-fa="delWeight" data-id="'+w.id+'" aria-label="Delete weigh-in '+esc(w.d)+'">Delete</button></span></li>').join("")+'</ul></details>':"")+'</section>';
+  return h;
+}
+function todayPanel(t,tot,left){
+  const f=F();
+  if(U.panel==="meal"){ if(!f.meals.length) return '<p class="hint">No saved meals yet. Build one in the Meals tab.</p>';
+    return '<div class="fd-form"><label class="full">Saved meal<select id="fd-mealpick">'+sortBy(f.meals,"name").map(m=>'<option value="'+m.id+'">'+esc(m.name)+'</option>').join("")+'</select></label><div class="full"><button class="btn primary wide" data-fa="logMealPick">Log meal</button></div></div>'; }
+  if(U.panel==="quick") return pickControls("addFood","Add to day");
+  if(U.panel==="suggest"){
+    if(!t.ready) return '<p class="hint">Set your details in Targets first.</p>';
+    if(left<=0) return '<p class="hint">You have reached today’s calories.</p>';
+    const fits=f.meals.map(m=>({m,s:sumEntries(m.items)})).filter(x=>x.s.k>=left*0.75&&x.s.k<=left*1.25);
+    if(!fits.length) return '<p class="hint">No saved meal is within 25% of the '+r0(left)+' kcal left. Build one in Meals.</p>';
+    return '<p class="hint">Saved meals within 25% of the '+r0(left)+' kcal left.</p><ul class="fd-list">'+fits.map(x=>'<li><div><div class="fd-name">'+esc(x.m.name)+'</div><div class="hint num">'+r0(x.s.k)+' kcal</div></div><button class="btn primary" data-fa="logMeal" data-id="'+x.m.id+'">Log</button></li>').join("")+'</ul>';
+  }
+  return "";
+}
+
+/* ---------- Meals ---------- */
+function vMeals(){
+  const f=F();
+  let h='<div class="fd-head" style="margin-top:6px"><div class="sect disp" style="margin:0">Saved meals</div><button class="btn" data-fa="newMeal">'+ICON_PLUS+'New meal</button></div>';
+  if(U.building){
+    h+='<section class="card"><div class="sect disp" style="margin-top:0">New meal</div><label class="fd-lbl">Name<input id="fd-mname" type="text" maxlength="60" placeholder="e.g. Chicken and rice" style="width:100%"></label><div style="margin-top:12px">'+pickControls("draftAdd","Add ingredient")+'</div>';
+    if(U.draft.length){ const dt=sumEntries(U.draft);
+      h+='<ul class="fd-list" style="margin-top:12px">'+U.draft.map((e,i)=>'<li><span>'+esc(e.n)+' <span class="hint">· '+esc(amountLabel(e))+'</span></span><button class="btn danger" data-fa="draftDel" data-idx="'+i+'">Remove</button></li>').join("")+'</ul><p class="hint num" style="margin-top:6px">'+r0(dt.k)+' kcal · P '+f1(dt.p)+' · C '+f1(dt.c)+' · F '+f1(dt.f)+'</p>'; }
+    h+='<div class="formline" style="margin-top:12px"><button class="btn primary" data-fa="saveMeal">Save meal</button><button class="btn" data-fa="cancelMeal">Cancel</button></div></section>';
+  }
+  if(!f.meals.length&&!U.building) h+='<section class="card"><p class="hint" style="margin:0">No saved meals yet. Build one with New meal, then log it from Today.</p></section>';
+  f.meals.forEach(m=>{ const t=sumEntries(m.items);
+    h+='<section class="card"><div class="fd-head" style="align-items:flex-start"><div style="min-width:0"><div class="fd-name" style="font-size:17px">'+esc(m.name)+'</div><div class="hint">'+m.items.length+' ingredient'+(m.items.length===1?"":"s")+'</div></div><div style="text-align:right"><div class="num" style="font-size:20px;font-weight:700">'+r0(t.k).toLocaleString()+' kcal</div><div class="hint num">'+r0(t.p)+'P · '+r0(t.f)+'F · '+r0(t.c)+'C</div></div></div><div class="formline" style="justify-content:flex-end"><button class="btn danger" data-fa="delMeal" data-id="'+m.id+'">Delete</button></div></section>'; });
+  return h;
+}
+
+/* ---------- Foods ---------- */
+function ukMissing(){ return UK_FOODS.filter(row=>{ const id=ukId(row[0]); return !F().foods.some(f=>f.id===id||f.name.toLowerCase()===row[0].toLowerCase()); }); }
+function vFoods(){
+  const f=F(), missing=ukMissing();
+  let h='<section class="card"><div class="sect disp" style="margin-top:0">Food database</div><p class="hint" style="margin:0">'+f.foods.length+' foods. Values are per 100 g, or per 100 ml for drinks. Countable items show a unit.</p>';
+  if(missing.length) h+='<div class="formline" style="margin-top:10px"><button class="btn" data-fa="importUK">Add '+missing.length+' UK whole foods</button></div>';
+  h+='<div class="formline" style="margin-top:10px"><button class="btn" data-fa="toggleAddFood">'+(U.addingFood?"Close":"+ Add custom food")+'</button></div>';
+  if(U.addingFood) h+='<div class="fd-form" style="margin-top:12px"><label class="full">Name<input id="fd-fname" type="text" maxlength="60"></label><label>Category<select id="fd-fcat">'+CATS.map(c=>'<option>'+c+'</option>').join("")+'</select></label><label>kcal per 100 g<input id="fd-fk" type="number" inputmode="decimal" min="0"></label><label>Protein g<input id="fd-fp" type="number" inputmode="decimal" min="0"></label><label>Carbs g<input id="fd-fc" type="number" inputmode="decimal" min="0"></label><label>Fat g<input id="fd-ff" type="number" inputmode="decimal" min="0"></label><label>Countable unit (optional)<input id="fd-fun" type="text" maxlength="20" placeholder="e.g. slice"></label><label>Grams per unit<input id="fd-fug" type="number" inputmode="decimal" min="0"></label><div class="full"><button class="btn primary wide" data-fa="addFoodLib">Add food</button></div></div>';
+  h+='</section>';
+  CATS.forEach(c=>{ const it=f.foods.filter(x=>(x.cat||"Other")===c).sort((a,b)=>a.name<b.name?-1:1); if(!it.length) return;
+    h+='<section class="card"><details><summary class="fd-sum">'+c+' ('+it.length+')</summary><ul class="fd-list" style="margin-top:6px">'+it.map(x=>'<li><div><div class="fd-name" style="font-weight:500">'+esc(x.name)+'</div><div class="hint num">'+r0(x.k)+' kcal · P '+f1(x.p)+' · C '+f1(x.c)+' · F '+f1(x.f)+(x.unit?' · 1 '+esc(x.unit.name)+' ≈ '+x.unit.g+' g':"")+'</div></div><button class="btn danger" data-fa="delFood" data-id="'+x.id+'" aria-label="Delete '+esc(x.name)+'">Delete</button></li>').join("")+'</ul></details></section>'; });
+  return h;
+}
+
+/* ---------- Targets ---------- */
+function vTargets(){
+  const f=F(), p=f.profile||{sex:"f",age:35,heightFt:5,heightIn:5,activity:1.375,fallback:"maintenance"}, w=latestWeight(), ready=!!(f.profile&&w!=null), c=ready?calcTargets("maintenance","train",w,f.profile):null;
+  let h='<section class="card"><div class="sect disp" style="margin-top:0">Your inputs</div><div class="fd-form">'+
+    '<label>Weight (latest weigh-in)<input type="text" readonly value="'+(w==null?"Log a weigh-in":f1(w)+" lb")+'"></label>'+
+    '<label>Age<input id="fd-age" type="number" inputmode="numeric" min="13" max="110" value="'+p.age+'"></label>'+
+    '<label>Height (ft)<input id="fd-ft" type="number" inputmode="numeric" min="3" max="8" value="'+p.heightFt+'"></label>'+
+    '<label>Height (in)<input id="fd-in" type="number" inputmode="numeric" min="0" max="11" value="'+p.heightIn+'"></label>'+
+    '<label>Sex<select id="fd-sex"><option value="f"'+(p.sex==="f"?" selected":"")+'>Female</option><option value="m"'+(p.sex==="m"?" selected":"")+'>Male</option></select></label>'+
+    '<label>Activity<select id="fd-act">'+ACTIVITY.map(a=>'<option value="'+a[0]+'"'+(a[0]===p.activity?" selected":"")+'>'+a[0]+' · '+esc(a[1])+'</option>').join("")+'</select></label>'+
+    '<label class="full">Phase when no plan covers a day<select id="fd-fb">'+phaseOptions(p.fallback)+'</select></label>'+
+    '<div class="full"><button class="btn primary wide" data-fa="saveSetup">Save</button></div></div></section>';
+  h+='<section class="card"><div class="fd-tiles2"><div class="fd-stat"><b class="num">'+(c?c.bmr.toLocaleString():"—")+'</b><span>BMR (Mifflin-St Jeor)</span></div><div class="fd-stat"><b class="num">'+(c?c.tdee.toLocaleString():"—")+'</b><span>TDEE (BMR × activity)</span></div></div></section>';
+  PHASE_ORDER.forEach(k=>{ const pd=PHASES[k], meta=pd.pct+"% TDEE · "+pd.protein+" g/lb · "+(pd.max!=null?"max "+pd.max+" "+pd.unit:"flexible"), dts=pd.restOnly?[["rest","Rest only"]]:[["train","Training"],["rest","Rest"]];
+    h+='<section class="card"><div class="fd-head">'+pill(k)+'<span class="hint">'+meta+'</span></div><div style="overflow-x:auto;margin-top:10px"><table class="fd-t"><thead><tr><th>Day</th><th>kcal</th><th>P g</th><th>F g</th><th>C g</th><th>P/F/C %</th></tr></thead><tbody>'+
+      dts.map(([dt,lbl])=>{ if(!ready) return '<tr><td>'+lbl+'</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>'; const x=calcTargets(k,dt,w,f.profile); return '<tr><td>'+lbl+'</td><td>'+x.kcal.toLocaleString()+'</td><td>'+x.protein+'</td><td>'+x.fat+'</td><td>'+x.carbs+'</td><td>'+x.pc.p+'/'+x.pc.f+'/'+x.pc.c+'</td></tr>'; }).join("")+
+      '</tbody></table></div><p class="hint" style="margin-top:8px">'+esc(pd.rule)+'</p></section>'; });
+  return h;
+}
+
+function html(){ return '<div class="food">'+subnav()+({today:vToday,meals:vMeals,foods:vFoods,targets:vTargets}[U.sub]||vToday)()+'</div>'; }
+
+/* ---------- actions ---------- */
+function commit(){ save(); render(); }
+function pickEntry(){
+  const f=currentPick(); if(!f) return null;
+  const unit=(U.pickUnit==="unit"&&f.unit)?"unit":"g", el=$("#fd-pqty"), qty=num(el?el.value:U.pickQty,0);
+  if(qty<=0){ toast(unit==="unit"?"Enter how many.":"Enter grams."); return null; }
+  return makeEntry(f,unit,qty);
+}
+function logMealById(id){ const m=F().meals.find(x=>x.id===id); if(!m) return; setItems(U.date,items(U.date).concat(m.items.map(i=>Object.assign({},i)))); U.panel=null; commit(); toast("Logged "+m.name); }
+const A={
+  sub:d=>{ U.sub=d.s; U.panel=null; render(); },
+  shiftDay:d=>{ U.date=addDays(U.date,num(d.n,0)); U.panel=null; render(); },
+  panel:d=>{ U.panel=U.panel===d.name?null:d.name; render(); },
+  setUnit:d=>{ const el=$("#fd-pqty"); U.pickQty=el?el.value:U.pickQty; U.pickUnit=d.u==="unit"?"unit":"g"; render(); },
+  dayType:d=>{ if(PHASES[targetsFor(U.date).key].restOnly) return; const r=F().days[U.date]||(F().days[U.date]={items:[],type:""}); r.type=d.type==="rest"?"rest":"train"; commit(); },
+  addFood:()=>{ const e=pickEntry(); if(!e) return; setItems(U.date,items(U.date).concat([e])); U.panel=null; U.pickQty=""; commit(); toast("Added "+e.n); },
+  draftAdd:()=>{ const e=pickEntry(); if(!e) return; U.draft.push(e); U.pickQty=""; render(); },
+  draftDel:d=>{ U.draft.splice(num(d.idx),1); render(); },
+  logMeal:d=>logMealById(d.id),
+  logMealPick:()=>{ const el=$("#fd-mealpick"); if(el) logMealById(el.value); },
+  delEntry:d=>{ const l=items(U.date).slice(); l.splice(num(d.idx),1); setItems(U.date,l); commit(); },
+  addWeight:()=>{ const day=$("#fd-wdate").value, lb=num($("#fd-wlb").value,0); if(!day||lb<=0) return toast("Enter a date and a weight in pounds."); F().weights.push({id:fid(),d:day,lb:Math.round(lb*10)/10}); commit(); toast("Weigh-in saved"); },
+  delWeight:d=>{ const f=F(); f.weights=f.weights.filter(w=>w.id!==d.id); if(!f.delw.includes(d.id)) f.delw.push(d.id); commit(); },
+  newMeal:()=>{ U.building=true; U.draft=[]; U.pickQty=""; render(); },
+  cancelMeal:()=>{ U.building=false; U.draft=[]; render(); },
+  saveMeal:()=>{ const name=$("#fd-mname").value.trim(); if(!name) return toast("Give the meal a name."); if(!U.draft.length) return toast("Add at least one ingredient."); F().meals.push({id:fid(),name,items:U.draft.slice()}); U.draft=[]; U.building=false; commit(); toast("Meal saved"); },
+  delMeal:d=>{ F().meals=F().meals.filter(m=>m.id!==d.id); commit(); },
+  toggleAddFood:()=>{ U.addingFood=!U.addingFood; render(); },
+  addFoodLib:()=>{
+    const name=$("#fd-fname").value.trim(), k=num($("#fd-fk").value,-1), p=num($("#fd-fp").value,-1), c=num($("#fd-fc").value,-1), fa=num($("#fd-ff").value,-1), un=$("#fd-fun").value.trim(), ug=num($("#fd-fug").value,0);
+    if(!name) return toast("Name the food."); if(k<0||p<0||c<0||fa<0) return toast("Enter kcal, protein, carbs and fat per 100 g.");
+    F().foods.push({id:fid(),name,cat:$("#fd-fcat").value,k,p,c,f:fa,unit:(un&&ug>0)?{name:un,g:ug}:null}); U.addingFood=false; commit(); toast("Food added"); },
+  delFood:d=>{ F().foods=F().foods.filter(x=>x.id!==d.id); commit(); },
+  importUK:()=>{ const add=ukMissing(); if(!add.length) return toast("Already added."); add.forEach(r=>F().foods.push(ukFood(r))); commit(); toast("Added "+add.length+" foods"); },
+  saveSetup:()=>{
+    const age=num($("#fd-age").value,0), ft=num($("#fd-ft").value,0), inch=num($("#fd-in").value,-1);
+    if(age<13||age>110) return toast("Age must be between 13 and 110."); if(ft<3||ft>8||inch<0||inch>11) return toast("Enter height as feet (3–8) and inches (0–11).");
+    F().profile={sex:$("#fd-sex").value==="m"?"m":"f",age,heightFt:Math.round(ft),heightIn:Math.round(inch),activity:num($("#fd-act").value,1.375),fallback:PHASES[$("#fd-fb").value]?$("#fd-fb").value:"maintenance"}; commit(); toast("Saved"); }
+};
+const C={
+  pickFood:el=>{ U.pickId=el.value; const f=foodById(el.value); U.pickUnit=(f&&f.unit)?"unit":"g"; U.pickQty=""; render(); },
+  pickQty:el=>{ U.pickQty=el.value; }
+};
+function act(name,ds){ const fn=A[name]; if(fn){ fn(ds); return true; } return false; }
+function chg(name,el){ const fn=C[name]; if(fn) fn(el); }
+return {html,fix,merge,has,cfg,importLegacy,blank,act,chg,targetsFor,latestWeight,sumEntries,items,PHASES,PHASE_COL};
+})();
+
 const KEY="bpp5.v1";
 function defaultSlot(tier){ const d=TIER_DEF[tier]; return {ex:"",grp:"",tier,orm:"",reps:d.reps,sets:"",prog:d.prog,style:"Straight sets",model:"Dynamic double progression"}; }
 function blankPlan(){
@@ -1428,7 +1838,7 @@ function blankPlan(){
   return plan;
 }
 let state=null, storageOK=true;
-function defaults(){ return {v:1,name:"",restSec:120,library:JSON.parse(JSON.stringify(LIB_DEFAULT)),custom:{},plan:blankPlan(),logs:{},pos:{m:1,w:1,s:"A"},tab:"train",planOpen:"A",planMonth:{},trendEx:"",programmes:[],hiddenPresets:[],blocks:[],block:{id:uid(),name:"My block",progId:"",start:todayISO()},volSel:{m:1,w:1},pw:0,libOpen:{},sm:{cfg:0,logs:{}}}; }
+function defaults(){ return {v:1,name:"",restSec:120,library:JSON.parse(JSON.stringify(LIB_DEFAULT)),custom:{},plan:blankPlan(),logs:{},pos:{m:1,w:1,s:"A"},tab:"train",planOpen:"A",planMonth:{},trendEx:"",programmes:[],hiddenPresets:[],food:Food.blank(),blocks:[],block:{id:uid(),name:"My block",progId:"",start:todayISO()},volSel:{m:1,w:1},pw:0,libOpen:{},sm:{cfg:0,logs:{}}}; }
 function load(){
   try{ const raw=localStorage.getItem(KEY); state = raw? Object.assign(defaults(),JSON.parse(raw)) : defaults(); }
   catch(e){ storageOK=false; state=defaults(); }
@@ -1440,6 +1850,7 @@ function migrate(){
   if(!Array.isArray(state.programmes)) state.programmes=[];
   if(!Array.isArray(state.blocks)) state.blocks=[];
   if(!Array.isArray(state.hiddenPresets)) state.hiddenPresets=[];
+  state.food=Food.fix(state.food);
   if(!state.volSel) state.volSel={m:1,w:1};
   if(!state.libOpen) state.libOpen={};
   if(state.pw==null) state.pw=0;
@@ -1880,6 +2291,7 @@ function render(){
   if(state.tab==="train") v.innerHTML=trainHTML();
   else if(state.tab==="plan") v.innerHTML=planHTML();
   else if(state.tab==="prog") v.innerHTML=progHTML();
+  else if(state.tab==="food") v.innerHTML=Food.html();
   else if(state.tab==="lib") v.innerHTML=libHTML();
   else v.innerHTML=dataHTML();
   wire();
@@ -1896,28 +2308,31 @@ let sync=(()=>{
 function persistSync(){ try{ const {url,key,session,deviceId,baseRev,pushedHash,lastSync}=sync; localStorage.setItem(SYNC_KEY,JSON.stringify({url,key,session,deviceId,baseRev,pushedHash,lastSync})); }catch(e){} }
 function hstr(x){ let h=5381; for(let i=0;i<x.length;i++) h=((h<<5)+h+x.charCodeAt(i))|0; return String(h); }
 function canon(o){ if(o===null||typeof o!=="object") return JSON.stringify(o); if(Array.isArray(o)) return "["+o.map(canon).join(",")+"]"; return "{"+Object.keys(o).sort().map(k=>JSON.stringify(k)+":"+canon(o[k])).join(",")+"}"; }
-function contentHash(d){ d=d||state; return hstr(canon({plan:d.plan,library:d.library,logs:d.logs,programmes:d.programmes,blocks:d.blocks,block:d.block,name:d.name})); }
-const HASHES={cfg:null,logs:{}};
+function contentHash(d){ d=d||state; return hstr(canon({plan:d.plan,library:d.library,logs:d.logs,programmes:d.programmes,blocks:d.blocks,block:d.block,name:d.name,food:d.food})); }
+const HASHES={cfg:null,logs:{},fcfg:null,fdays:{}};
 function cfgDoc(){ return {plan:state.plan,library:state.library,hiddenPresets:state.hiddenPresets,programmes:state.programmes,blocks:state.blocks,block:state.block,name:state.name}; }
-function baselineHashes(){ HASHES.cfg=hstr(JSON.stringify(cfgDoc())); HASHES.logs={}; for(const k in state.logs) HASHES.logs[k]=hstr(JSON.stringify(state.logs[k])); }
+function baselineHashes(){ HASHES.cfg=hstr(JSON.stringify(cfgDoc())); HASHES.fcfg=hstr(JSON.stringify(Food.cfg())); HASHES.fdays={}; for(const k in state.food.days) HASHES.fdays[k]=hstr(JSON.stringify(state.food.days[k])); HASHES.logs={}; for(const k in state.logs) HASHES.logs[k]=hstr(JSON.stringify(state.logs[k])); }
 /* remember when each part last changed on this device, so a merge can keep the newer side */
 function stampChanges(){
   const now=Date.now(), sm=state.sm;
   const ch=hstr(JSON.stringify(cfgDoc())); if(ch!==HASHES.cfg){ sm.cfg=now; HASHES.cfg=ch; }
   for(const k in state.logs){ const lh=hstr(JSON.stringify(state.logs[k])); if(HASHES.logs[k]!==lh){ sm.logs[k]=now; HASHES.logs[k]=lh; } }
   for(const k in sm.logs) if(!(k in state.logs)){ delete sm.logs[k]; delete HASHES.logs[k]; }
+  const fh=hstr(JSON.stringify(Food.cfg())); if(fh!==HASHES.fcfg){ sm.fcfg=now; HASHES.fcfg=fh; }
+  sm.fdays=sm.fdays||{};
+  for(const k in state.food.days){ const dh=hstr(JSON.stringify(state.food.days[k])); if(HASHES.fdays[k]!==dh){ sm.fdays[k]=now; HASHES.fdays[k]=dh; } }
 }
 baselineHashes();
-function exportDoc(){ return JSON.parse(JSON.stringify({plan:state.plan,library:state.library,hiddenPresets:state.hiddenPresets,logs:state.logs,programmes:state.programmes,blocks:state.blocks,block:state.block,name:state.name,sm:state.sm})); }
+function exportDoc(){ return JSON.parse(JSON.stringify({plan:state.plan,library:state.library,hiddenPresets:state.hiddenPresets,logs:state.logs,programmes:state.programmes,blocks:state.blocks,block:state.block,name:state.name,food:state.food,sm:state.sm})); }
 function applyDoc(d){
-  state.plan=d.plan; state.library=d.library; state.hiddenPresets=d.hiddenPresets||[]; state.logs=d.logs||{}; state.programmes=d.programmes||[]; state.blocks=d.blocks||[]; state.block=d.block; state.name=d.name||""; state.sm=d.sm||{cfg:0,logs:{}};
+  state.plan=d.plan; state.library=d.library; state.hiddenPresets=d.hiddenPresets||[]; state.logs=d.logs||{}; state.programmes=d.programmes||[]; state.blocks=d.blocks||[]; state.block=d.block; state.name=d.name||""; state.food=d.food||Food.blank(); state.sm=d.sm||{cfg:0,logs:{}};
   migrate(); baselineHashes();
   clearTimeout(saveT); try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){}
   render();
 }
 function docEmpty(d){
   const hasPlan=SESSIONS.some(s=>[1,2,3].some(m=>SLOTS.some(sl=>d.plan&&d.plan[s]&&d.plan[s][m]&&d.plan[s][m][sl.id]&&d.plan[s][m][sl.id].ex)));
-  return !hasPlan&&!blockStats(d.plan,d.logs||{}).sets&&!(d.programmes||[]).length&&!(d.blocks||[]).length;
+  return !hasPlan&&!blockStats(d.plan,d.logs||{}).sets&&!(d.programmes||[]).length&&!(d.blocks||[]).length&&!Food.has(d.food);
 }
 function unionById(a,b,pick){ const m=new Map(); for(const x of (a||[])) m.set(x.id,x); for(const x of (b||[])){ const y=m.get(x.id); m.set(x.id,y&&pick?pick(y,x):(y||x)); } return [...m.values()]; }
 /* Merge two copies of the data. Logs: per session, newest edit wins. Plan/library/name: whichever side was edited last.
@@ -1930,6 +2345,7 @@ function mergeDocs(L,R){
   const out={}, lNew=(L.sm.cfg||0)>=(R.sm.cfg||0), base=lNew?L:R, sm={cfg:Math.max(L.sm.cfg||0,R.sm.cfg||0),logs:{}};
   out.blocks=unionById(cp(L.blocks),cp(R.blocks));
   out.programmes=unionById(cp(L.programmes),cp(R.programmes),(x,y)=>(x.saved>=y.saved?x:y));
+  out.food=Food.merge(L.food,R.food,L.sm,R.sm);
   out.library=cp(base.library); out.hiddenPresets=cp(base.hiddenPresets||[]); out.name=base.name||L.name||R.name||"";
   if(L.block.id===R.block.id){
     out.block=cp(base.block); out.plan=cp(base.plan); out.logs={};
@@ -2284,6 +2700,12 @@ function physKeys(e){
   else return;
   e.preventDefault();
 }
+(function(){
+  const v=document.getElementById("view");
+  v.addEventListener("click",e=>{ const el=e.target.closest&&e.target.closest("[data-fa]"); if(el&&Food.act(el.dataset.fa,el.dataset)) e.stopPropagation(); });
+  v.addEventListener("change",e=>{ const el=e.target.closest&&e.target.closest("[data-fc]"); if(el) Food.chg(el.dataset.fc,el); });
+  v.addEventListener("input",e=>{ const el=e.target.closest&&e.target.closest("[data-fc=pickQty]"); if(el) Food.chg("pickQty",el); });
+})();
 function renderDock(){
   const dock=$("#dock"), sheet=$("#sheet");
   if(!entry){ sheet.hidden=true; sheet.innerHTML=""; dock.classList.remove("sheet-open"); syncDock(); return; }
@@ -2735,6 +3157,12 @@ function dataHTML(){
       <label class="btn" for="impfile">Import from file…</label><input type="file" id="impfile" accept=".json,application/json" hidden></div>
     ${storageOK?"":`<p class="hint" style="color:var(--prim)">⚠︎ This browser is blocking storage — data will not persist. Try opening the artifact in a regular browser tab.</p>`}
   </div>
+  <div class="sect disp">Import macro data</div>
+  <div class="card">
+    <p style="font-size:14px">Bring in a backup from the old Macro Tracker. Nothing already here is overwritten.</p>
+    <textarea id="macbox" placeholder='{"v":5,…}'></textarea>
+    <div class="formline"><button class="btn primary" id="macimport">Import macro data</button><label class="btn" for="macfile">From file…</label><input type="file" id="macfile" accept=".json,application/json" hidden></div>
+  </div>
   <div class="sect disp">Import 1RMs</div>
   <div class="card">
     <p style="font-size:14px">Paste one exercise per line, like <b>Squat 106</b> (kg). They go into this block's 1RMs, and sync with everything else.</p>
@@ -2917,6 +3345,9 @@ function wire(){
     if(ts) ts.addEventListener("change",()=>{ state.trendEx=ts.value; save(); render(); });
   }
   if(state.tab==="data"){
+    const doMac=txt=>{ const r=Food.importLegacy(txt); if(r.err){ toast(r.err); return; } save(); $("#macbox").value=""; toast("Imported "+r.days+" days, "+r.w+" weigh-ins, "+r.m+" meals, "+r.f+" foods, "+r.b+" phases"); };
+    $("#macimport").addEventListener("click",()=>doMac($("#macbox").value));
+    $("#macfile").addEventListener("change",e=>{ const f=e.target.files[0]; if(!f) return; f.text().then(doMac); });
     $("#ormimport").addEventListener("click",()=>{
       const ALIAS={"squat":["Back Squat"],"romaniandeadlift":["Barbell Romanian Deadlift"],"bentoverrow":["Barbell Row"],"legpress":["Leg Press Low & Close","Leg Press High & Wide","Leg Press - Iron Records"],"overheadpress":["Overhead Press","Military Press"]};
       if(!state.block.orm) state.block.orm={}; let n=0;
