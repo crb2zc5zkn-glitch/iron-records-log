@@ -477,7 +477,7 @@ dialog::backdrop{background:rgba(10,10,14,.5)}
 
 <script>
 'use strict';
-/* ================= program template (from the Aquilina Big Picture 5-Day workbook) ================= */
+/* ================= program template ================= */
 const MUSCLES = ["Chest", "Lats", "Upper Back", "Front Delt", "Side Delt", "Rear Delt", "Biceps", "Triceps", "Forearms", "Quads", "Hams", "Glutes", "Adductors", "Calves", "Abs", "Erectors"];
 const NO_DB=/dumbbell|\bDBs?\b/i;
 const LIB_DEFAULT = {
@@ -1459,7 +1459,7 @@ const SLOTS = [
  {id:"s0",tier:"SUPP"},{id:"s1",tier:"SUPP"}
 ];
 const TIER_NAME = {PRIM:"Strength",HT:"Hypertrophy",SUPP:"Isolation"};
-/* a slot's Type sets its default rep range; "wave" types follow the workbook's weekly sets/RPE wave */
+/* a slot's Type sets its default rep range; "wave" types follow a weekly sets/RPE wave */
 const TIER_DEF = {
   PRIM:{reps:"6-8",  prog:2, wave:true},
   HT:  {reps:"8-12", prog:2, wave:true},
@@ -1683,7 +1683,7 @@ function foodOptions(sel){
 }
 function currentPick(){ let f=foodById(U.pickId); if(!f){ f=sortedFoods()[0]; U.pickId=f?f.id:null; } return f; }
 function pickControls(act,label){
-  const f=currentPick(); if(!f) return '<p class="hint">Add a food first (Foods tab).</p>';
+  const f=currentPick(); if(!f) return '<p class="hint">No foods yet.</p>';
   const useUnit=U.pickUnit==="unit"&&f.unit;
   const seg='<div class="fd-seg" role="group" aria-label="Amount type"><button data-fa="setUnit" data-u="g" aria-pressed="'+(!useUnit)+'">Grams</button>'+(f.unit?'<button data-fa="setUnit" data-u="unit" aria-pressed="'+(!!useUnit)+'">'+esc(cap(plural(f.unit.name,2)))+'</button>':"")+'</div>';
   return '<div class="fd-form"><label class="full">Food<select id="fd-pfood" data-fc="pickFood">'+foodOptions(f.id)+'</select></label><div class="full">'+seg+'</div>'+
@@ -1703,14 +1703,13 @@ function vToday(){
   const pos=t.block?blockPosition(t.block,d):"no phase logged, showing "+pd.label;
   h+='<section class="card fd-hero"><div class="hint">Week '+isoWeek(d)+' · w/c '+fmtShort(mondayOf(d))+' · '+esc(pos)+'</div>'+
      '<div class="fd-big num">'+(t.ready?t.kcal.toLocaleString():"—")+'<small>kcal target</small></div>'+pill(t.key);
-  if(pd.restOnly) h+='<div class="fd-note">Rest days only in a Nuclear Cut.</div>';
-  else{
+  if(!pd.restOnly){
     h+='<div class="fd-seg" role="group" aria-label="Day type"><button data-fa="dayType" data-type="train" aria-pressed="'+(t.dayType==="train")+'">Training day</button><button data-fa="dayType" data-type="rest" aria-pressed="'+(t.dayType==="rest")+'">Rest day</button></div>';
     h+='<div class="hint" style="margin-top:6px">'+(t.auto?'Set automatically: '+esc(t.auto.why):'Set by you. <button class="fd-link" data-fa="dayAuto">Use automatic</button>')+'</div>';
   }
   if(t.ready) h+='<div class="fd-tiles"><div class="fd-tile"><b class="num">'+t.protein+'<small>g</small></b><span>Protein</span><em>'+t.pc.p+'%</em></div><div class="fd-tile"><b class="num">'+t.fat+'<small>g</small></b><span>Fat</span><em>'+t.pc.f+'%</em></div><div class="fd-tile"><b class="num">'+t.carbs+'<small>g</small></b><span>Carbs</span><em>'+t.pc.c+'%</em></div></div>';
-  else h+='<div class="fd-note">Set your details in <b>Targets</b> and log a weigh-in to see daily goals.</div>';
-  h+='<div class="fd-note">'+esc(pd.rule)+'</div></section>';
+  else h+='<div class="fd-note">Set your details in <b>Targets</b> and log a weigh-in.</div>';
+  h+='</section>';
 
   const left=t.ready?t.kcal-tot.k:null;
   h+='<section class="card"><div class="fd-head"><div class="sect disp" style="margin:0">Food</div>'+(t.ready?'<span class="fd-tag'+(left<0?" bad":"")+'">'+(left<0?r0(-left).toLocaleString()+" kcal over":r0(left).toLocaleString()+" kcal left")+'</span>':"")+'</div>';
@@ -1719,7 +1718,7 @@ function vToday(){
     h+=m("Calories",tot.k,t.kcal," kcal","var(--ink)",0)+m("Protein",tot.p,t.protein,"g","var(--c-protein)",1)+m("Fat",tot.f,t.fat,"g","var(--c-fat)",1)+m("Carbs",tot.c,t.carbs,"g","var(--c-carb)",1);
   }
   if(list.length) h+='<ul class="fd-list" style="margin-top:16px">'+list.map((e,i)=>{ const m=sumEntries([e]); return '<li><div><div class="fd-name">'+esc(e.n)+' <span class="hint">· '+esc(amountLabel(e))+'</span></div><div class="hint num">'+r0(m.k)+' kcal · P '+f1(m.p)+' · C '+f1(m.c)+' · F '+f1(m.f)+'</div></div><button class="btn danger" data-fa="delEntry" data-idx="'+i+'" aria-label="Remove '+esc(e.n)+'">Remove</button></li>'; }).join("")+'</ul>';
-  else h+='<p class="hint" style="margin-top:14px">Nothing logged yet. Add a meal, quick-add a food, or ask for a suggestion.</p>';
+  else h+='<p class="hint" style="margin-top:14px">Nothing logged yet.</p>';
   h+='<div class="fd-btns"><button class="btn'+(U.panel==="meal"?" primary":"")+'" data-fa="panel" data-name="meal">'+ICON_PLUS+'Meal</button><button class="btn'+(U.panel==="quick"?" primary":"")+'" data-fa="panel" data-name="quick">'+ICON_PLUS+'Quick add</button><button class="btn'+(U.panel==="suggest"?" primary":"")+'" data-fa="panel" data-name="suggest">'+ICON_BOLT+'Suggest</button></div>';
   if(U.panel) h+='<div class="fd-panel">'+todayPanel(t,tot,left)+'</div>';
   h+='</section>';
@@ -1727,21 +1726,20 @@ function vToday(){
   const ws=sortBy(f.weights,"d"), lw=ws.length?ws[ws.length-1]:null;
   h+='<section class="card"><div class="fd-head"><div class="sect disp" style="margin:0">Weigh-in</div>'+(lw?'<span class="hint">Last '+f1(lw.lb)+' lb on '+fmtShort(lw.d)+'</span>':"")+'</div>'+
      '<div class="formline"><input id="fd-wlb" class="grow" type="number" inputmode="decimal" step="0.1" min="1" placeholder="Weight (lb)" aria-label="Weight in pounds" style="flex:1;min-width:110px"><input id="fd-wdate" type="date" value="'+today()+'" aria-label="Date"><button class="btn primary" data-fa="addWeight">Save</button></div>'+
-     '<p class="hint" style="margin-top:8px">Log every Monday morning. Targets update automatically.</p>'+
      (ws.length?'<details style="margin-top:8px"><summary class="hint" style="cursor:pointer">Recent weigh-ins ('+ws.length+')</summary><ul class="fd-list">'+ws.slice().reverse().slice(0,12).map(w=>'<li><span class="num">'+esc(fmtShort(w.d))+'</span><span><b class="num">'+f1(w.lb)+' lb</b> <button class="btn danger" data-fa="delWeight" data-id="'+w.id+'" aria-label="Delete weigh-in '+esc(w.d)+'">Delete</button></span></li>').join("")+'</ul></details>':"")+'</section>';
   return h;
 }
 function todayPanel(t,tot,left){
   const f=F();
-  if(U.panel==="meal"){ if(!f.meals.length) return '<p class="hint">No saved meals yet. Build one in the Meals tab.</p>';
+  if(U.panel==="meal"){ if(!f.meals.length) return '<p class="hint">No saved meals.</p>';
     return '<div class="fd-form"><label class="full">Saved meal<select id="fd-mealpick">'+sortBy(f.meals,"name").map(m=>'<option value="'+m.id+'">'+esc(m.name)+'</option>').join("")+'</select></label><div class="full"><button class="btn primary wide" data-fa="logMealPick">Log meal</button></div></div>'; }
   if(U.panel==="quick") return pickControls("addFood","Add to day");
   if(U.panel==="suggest"){
-    if(!t.ready) return '<p class="hint">Set your details in Targets first.</p>';
+    if(!t.ready) return '<p class="hint">Set your details in Targets.</p>';
     if(left<=0) return '<p class="hint">You have reached today’s calories.</p>';
     const fits=f.meals.map(m=>({m,s:sumEntries(m.items)})).filter(x=>x.s.k>=left*0.75&&x.s.k<=left*1.25);
-    if(!fits.length) return '<p class="hint">No saved meal is within 25% of the '+r0(left)+' kcal left. Build one in Meals.</p>';
-    return '<p class="hint">Saved meals within 25% of the '+r0(left)+' kcal left.</p><ul class="fd-list">'+fits.map(x=>'<li><div><div class="fd-name">'+esc(x.m.name)+'</div><div class="hint num">'+r0(x.s.k)+' kcal</div></div><button class="btn primary" data-fa="logMeal" data-id="'+x.m.id+'">Log</button></li>').join("")+'</ul>';
+    if(!fits.length) return '<p class="hint">No saved meal fits the '+r0(left)+' kcal left.</p>';
+    return '<p class="hint">Meals within 25% of '+r0(left)+' kcal left.</p><ul class="fd-list">'+fits.map(x=>'<li><div><div class="fd-name">'+esc(x.m.name)+'</div><div class="hint num">'+r0(x.s.k)+' kcal</div></div><button class="btn primary" data-fa="logMeal" data-id="'+x.m.id+'">Log</button></li>').join("")+'</ul>';
   }
   return "";
 }
@@ -1756,7 +1754,7 @@ function vMeals(){
       h+='<ul class="fd-list" style="margin-top:12px">'+U.draft.map((e,i)=>'<li><span>'+esc(e.n)+' <span class="hint">· '+esc(amountLabel(e))+'</span></span><button class="btn danger" data-fa="draftDel" data-idx="'+i+'">Remove</button></li>').join("")+'</ul><p class="hint num" style="margin-top:6px">'+r0(dt.k)+' kcal · P '+f1(dt.p)+' · C '+f1(dt.c)+' · F '+f1(dt.f)+'</p>'; }
     h+='<div class="formline" style="margin-top:12px"><button class="btn primary" data-fa="saveMeal">Save meal</button><button class="btn" data-fa="cancelMeal">Cancel</button></div></section>';
   }
-  if(!f.meals.length&&!U.building) h+='<section class="card"><p class="hint" style="margin:0">No saved meals yet. Build one with New meal, then log it from Today.</p></section>';
+  if(!f.meals.length&&!U.building) h+='<section class="card"><p class="hint" style="margin:0">No saved meals.</p></section>';
   f.meals.forEach(m=>{ const t=sumEntries(m.items);
     h+='<section class="card"><div class="fd-head" style="align-items:flex-start"><div style="min-width:0"><div class="fd-name" style="font-size:17px">'+esc(m.name)+'</div><div class="hint">'+m.items.length+' ingredient'+(m.items.length===1?"":"s")+'</div></div><div style="text-align:right"><div class="num" style="font-size:20px;font-weight:700">'+r0(t.k).toLocaleString()+' kcal</div><div class="hint num">'+r0(t.p)+'P · '+r0(t.f)+'F · '+r0(t.c)+'C</div></div></div><div class="formline" style="justify-content:flex-end"><button class="btn danger" data-fa="delMeal" data-id="'+m.id+'">Delete</button></div></section>'; });
   return h;
@@ -1766,7 +1764,7 @@ function vMeals(){
 function ukMissing(){ return UK_FOODS.filter(row=>{ const id=ukId(row[0]); return !F().foods.some(f=>f.id===id||f.name.toLowerCase()===row[0].toLowerCase()); }); }
 function vFoods(){
   const f=F(), missing=ukMissing();
-  let h='<section class="card"><div class="sect disp" style="margin-top:0">Food database</div><p class="hint" style="margin:0">'+f.foods.length+' foods. Values are per 100 g, or per 100 ml for drinks. Countable items show a unit.</p>';
+  let h='<section class="card"><div class="sect disp" style="margin-top:0">Food database</div><p class="hint" style="margin:0">'+f.foods.length+' foods.</p>';
   if(missing.length) h+='<div class="formline" style="margin-top:10px"><button class="btn" data-fa="importUK">Add '+missing.length+' UK whole foods</button></div>';
   h+='<div class="formline" style="margin-top:10px"><button class="btn" data-fa="toggleAddFood">'+(U.addingFood?"Close":"+ Add custom food")+'</button></div>';
   if(U.addingFood) h+='<div class="fd-form" style="margin-top:12px"><label class="full">Name<input id="fd-fname" type="text" maxlength="60"></label><label>Category<select id="fd-fcat">'+CATS.map(c=>'<option>'+c+'</option>').join("")+'</select></label><label>kcal per 100 g<input id="fd-fk" type="number" inputmode="decimal" min="0"></label><label>Protein g<input id="fd-fp" type="number" inputmode="decimal" min="0"></label><label>Carbs g<input id="fd-fc" type="number" inputmode="decimal" min="0"></label><label>Fat g<input id="fd-ff" type="number" inputmode="decimal" min="0"></label><label>Countable unit (optional)<input id="fd-fun" type="text" maxlength="20" placeholder="e.g. slice"></label><label>Grams per unit<input id="fd-fug" type="number" inputmode="decimal" min="0"></label><div class="full"><button class="btn primary wide" data-fa="addFoodLib">Add food</button></div></div>';
@@ -1792,7 +1790,7 @@ function vTargets(){
   PHASE_ORDER.forEach(k=>{ const pd=PHASES[k], meta=pd.pct+"% TDEE · "+pd.protein+" g/lb · "+(pd.max!=null?"max "+pd.max+" "+pd.unit:"flexible"), dts=pd.restOnly?[["rest","Rest only"]]:[["train","Training"],["rest","Rest"]];
     h+='<section class="card"><div class="fd-head">'+pill(k)+'<span class="hint">'+meta+'</span></div><div style="overflow-x:auto;margin-top:10px"><table class="fd-t"><thead><tr><th>Day</th><th>kcal</th><th>P g</th><th>F g</th><th>C g</th><th>P/F/C %</th></tr></thead><tbody>'+
       dts.map(([dt,lbl])=>{ if(!ready) return '<tr><td>'+lbl+'</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>'; const x=calcTargets(k,dt,w,f.profile); return '<tr><td>'+lbl+'</td><td>'+x.kcal.toLocaleString()+'</td><td>'+x.protein+'</td><td>'+x.fat+'</td><td>'+x.carbs+'</td><td>'+x.pc.p+'/'+x.pc.f+'/'+x.pc.c+'</td></tr>'; }).join("")+
-      '</tbody></table></div><p class="hint" style="margin-top:8px">'+esc(pd.rule)+'</p></section>'; });
+      '</tbody></table></div></section>'; });
   return h;
 }
 
@@ -1815,10 +1813,10 @@ function vPlan(){
   let h='<section class="card"><div class="sect disp" style="margin-top:0">Plan a phase</div><div class="fd-form"><label class="full">Phase<select id="fd-pphase" data-fc="planPhase">'+phaseOptions(U.planPhase)+'</select></label>'+
     '<label>Start date<input id="fd-pstart" type="date" value="'+(U.planStart||t0)+'"></label>'+
     '<label>'+(sel.unit==="days"?"Days (max "+sel.max+")":"Weeks"+(sel.max!=null?" (max "+sel.max+")":""))+'<input id="fd-plen" type="number" inputmode="numeric" min="1" step="1" value="'+DEFAULT_LEN[U.planPhase]+'"></label>'+
-    '<div class="full"><button class="btn primary wide" data-fa="addBlock">Add to plan</button></div></div><p class="hint" style="margin-top:10px">'+esc(sel.rule)+'</p></section>';
+    '<div class="full"><button class="btn primary wide" data-fa="addBlock">Add to plan</button></div></div></section>';
   if(warns.length) h+='<section class="card"><div class="sect disp" style="margin-top:0">Check these</div><ul class="fd-warn">'+warns.map(x=>'<li class="'+x.cls+'">'+esc(x.text)+'</li>').join("")+'</ul></section>';
   h+='<section class="card"><div class="sect disp" style="margin-top:0">Timeline</div>';
-  if(!plan.length) h+='<p class="hint" style="margin:0">No phases planned yet. Add one above, for example a 6-week Aggressive Cut.</p>';
+  if(!plan.length) h+='<p class="hint" style="margin:0">No phases planned.</p>';
   plan.forEach((b,i)=>{
     const pd=PHASES[b.phase], end=addDays(endOf(b),-1), status=t0<b.start?"Planned":(t0<endOf(b)?"Now":"Done"), limit=pd.max!=null?b.len+" of "+pd.max+" "+pd.unit:b.len+" "+pd.unit;
     const kc=ready?(pd.restOnly?["rest"]:["train","rest"]).map(dt=>{ const c=calcTargets(b.phase,dt,w,p); return '<div class="hint num">'+(dt==="train"?"Training":"Rest")+' · '+c.kcal.toLocaleString()+' kcal · P '+c.protein+' · C '+c.carbs+' · F '+c.fat+'</div>'; }).join(""):'<div class="hint">Set your details and log a weight to see macros.</div>';
@@ -1829,7 +1827,7 @@ function vPlan(){
 
 /* ---------- Dash ---------- */
 function chartSvg(ws){
-  const pts=ws.slice(-60); if(pts.length<2) return '<p class="hint">Log two or more weigh-ins to see the trend.</p>';
+  const pts=ws.slice(-60); if(pts.length<2) return '<p class="hint">Needs two weigh-ins.</p>';
   const W=320,H=190,PL=36,PR=10,PT=12,PB=26, vals=pts.map(p=>p.lb);
   let lo=Math.floor(Math.min(...vals))-1, hi=Math.ceil(Math.max(...vals))+1; if(hi-lo<2) hi=lo+2; const mid=(lo+hi)/2;
   const y=v=>PT+(hi-v)/(hi-lo)*(H-PT-PB), x=i=>PL+i*(W-PL-PR)/(pts.length-1);
@@ -1852,7 +1850,7 @@ function vDash(){
   f.plan.forEach(b=>{ per[b.phase]+=b.len; if(b.phase==="nuclear"){ if(dayDiff(t0,endOf(b))>-365) nuclear+=b.len; } else planned+=b.len; });
   let h='<section class="card"><div class="fd-head"><div class="sect disp" style="margin:0">Weight</div><span class="hint">'+(ws.length?ws.length+" weigh-ins":"")+'</span></div>'+chartSvg(ws)+'</section>';
   const fw=foodWeek();
-  h+='<section class="card"><div class="sect disp" style="margin-top:0">Food · last 7 days</div>'+(fw.n?'<div class="fd-tiles2"><div class="fd-stat"><b class="num">'+r0(fw.k).toLocaleString()+'<small> kcal</small></b><span>Average per logged day</span></div><div class="fd-stat"><b class="num">'+r0(fw.p)+'<small> g</small></b><span>Protein per logged day</span></div></div><p class="hint" style="margin-top:8px">'+fw.n+' of the last 7 days logged.</p>':'<p class="hint" style="margin:0">No food logged in the last 7 days yet. Track meals on the Today tab.</p>')+'</section>';
+  h+='<section class="card"><div class="sect disp" style="margin-top:0">Food · last 7 days</div>'+(fw.n?'<div class="fd-tiles2"><div class="fd-stat"><b class="num">'+r0(fw.k).toLocaleString()+'<small> kcal</small></b><span>Average per logged day</span></div><div class="fd-stat"><b class="num">'+r0(fw.p)+'<small> g</small></b><span>Protein per logged day</span></div></div><p class="hint" style="margin-top:8px">'+fw.n+' of the last 7 days logged.</p>':'<p class="hint" style="margin:0">No food logged in the last 7 days.</p>')+'</section>';
   const st=(v,l)=>'<div class="fd-stat"><b class="num">'+v+'</b><span>'+l+'</span></div>';
   h+='<section class="card"><div class="sect disp" style="margin-top:0">Year at a glance</div><div class="fd-tiles2">'+st(first==null?"—":f1(first),"Start weight (lb)")+st(latest==null?"—":f1(latest),"Latest weight (lb)")+st(change==null?"—":(change>0?"+":"")+f1(change),"Total change (lb)")+st(Object.keys(weeks).length,"Weeks tracked")+st(nuclear+'<small> / ~24/yr</small>',"Nuclear days used")+st(planned,"Weeks planned")+'</div></section>';
   h+='<section class="card"><div class="sect disp" style="margin-top:0">Weeks per phase</div>'+PHASE_ORDER.map(k=>{ const pd=PHASES[k]; return '<div class="fd-phr"><div><span class="fd-dot" style="background:'+PHASE_COL[k]+'"></span> '+pd.label+'</div><div class="hint num"><b style="color:var(--ink)">'+per[k]+'</b> '+(pd.unit==="days"?"d":"wk")+(pd.max!=null?' (max '+pd.max+')':"")+'</div></div>'; }).join("")+'</section>';
@@ -2563,10 +2561,8 @@ function syncCardHTML(){
     <div style="font-size:14px">Signed in as <b>${esc(sync.session.email||"")}</b></div>
     <div class="hint" id="syncstat">${esc(statusLine())}</div>
     <div class="formline" style="margin-top:10px"><button class="btn primary" id="syncnow">Sync now</button><button class="btn" id="synccopy">Copy setup code</button><button class="btn danger" id="syncout">Sign out</button></div>
-    <p class="hint">Changes upload a few seconds after you make them and download when you open the app. If two devices were edited at once they are merged, and the cloud keeps recent snapshots as a safety net. On another device, paste the setup code (it holds the project address and key, not your password).</p>
   </div>`;
   return `<div class="sect disp">Cloud sync</div><div class="card">
-    <p style="font-size:14px">Keeps your devices in step automatically. One-time setup takes about five minutes — <a href="https://github.com/crb2zc5zkn-glitch/iron-records-log/blob/main/SYNC-SETUP.md" target="_blank" rel="noopener">follow the steps here</a>.</p>
     <label class="fld" style="margin-top:10px"><span class="fl">Setup code (from another device)</span><input id="sy-code" placeholder="bp5:…" autocomplete="off" autocapitalize="off"></label>
     <div class="fields" style="margin-top:10px">
       <label class="fld wide"><span class="fl">Project address</span><input id="sy-url" value="${esc(sync.url)}" placeholder="https://xxxx.supabase.co" autocomplete="off" autocapitalize="off" inputmode="url"></label>
@@ -2633,7 +2629,7 @@ function trainHTML(){
       hint=`<div class="ormrow${orm==null?" need":""}"><span>${orm==null?"Your 1RM":"1RM"}</span><input class="num" inputmode="decimal" data-orm="${sl.id}" value="${orm==null?"":fmtKg(orm)}" placeholder="kg" aria-label="1RM for ${esc(p.ex)}"><span>kg${bmp?` <b>+${fmtKg(bmp)}</b>`:""}</span><span class="ormpct num">${fmtKg(lo)}${hi>lo?"–"+fmtKg(hi):""}% this week</span></div>`;
     }
     if(pr.msg) hint=pr.up?`<button class="hintbtn" data-usesug="${sl.id}">↑ ${esc(pr.msg)} · <b>Use suggested weights</b></button>`:`<div class="modelnote">${esc(pr.msg)}</div>`;
-    if(p.style&&p.style!=="Straight sets") hint=`<div class="modelnote"><b>${esc(p.style)}</b> — ${esc(STYLE_DESC[p.style]||"")}</div>`+hint;
+    if(p.style&&p.style!=="Straight sets") hint=`<div class="modelnote"><b>${esc(p.style)}</b></div>`+hint;
     for(let i=0;i<n;i++){
       const x=(rl.sets&&rl.sets[i])||{r:null,w:"",rpe:null,ok:false};
       const ok=okSet(x), wEmpty=(x.w===""||x.w==null);
@@ -2685,8 +2681,7 @@ function trainHTML(){
     </div>`;
   const body = cards
     ? `${sum}<div class="exgrid">${cards}</div>
-      <div class="datefoot"><span>Trained</span><input type="date" data-date value="${esc(L&&L.date||"")}"></div>
-      <p class="hint">Tap ✓ to log a set at the top of the rep range with your suggested weight, or tap Reps, KG or RPE to enter what you actually did. Row colour shows the reps: green = top of the range, amber = middle, red = bottom or below. Hit the top on every set and the app suggests your weight jump next time.</p>`
+      <div class="datefoot"><span>Trained</span><input type="date" data-date value="${esc(L&&L.date||"")}"></div>`
     : `<div class="card emptycard">Nothing planned yet for <b>Session ${s}</b> in Month ${m}.<br>Pick its exercises once in the Plan tab and they'll appear here every week.<br><button class="btn primary" data-goplan="${s}">Open Plan</button></div>`;
   const _b=state.block, _base=progById(_b.progId), _pn=_b.name||"My block";
   const progline=`<div class="progline"><span class="k disp">Programme</span><b>${esc(_pn)}</b>${_base&&_base.name!==_pn?`<span class="from">from ${esc(_base.name)}</span>`:""}</div>`;
@@ -2878,10 +2873,9 @@ function presetsHTML(){
       const n=presetCount(P), slots=P.days.reduce((a,d)=>a+d[1].length,0);
       const days=P.days.map((d,i)=>`<div class="pdday"><b>${SESSIONS[i]} · ${esc(d[0])}</b><br>${d[1].map(l=>{ const f=l.split("|"); return esc(f[0]||"("+f[1]+")"); }).join(" · ")}</div>`).join("");
       return `<details class="pdet"><summary><span class="pgname">${esc(P.name)}</span><span class="pgmeta num">${P.days.length} days · ${n?n+" exercises":slots+" muscle slots"}</span></summary>
-        <div class="pdbody"><p class="hint" style="margin:0 0 6px">${esc(P.note)}</p>${days}
+        <div class="pdbody">${days}
         <div class="formline" style="margin-top:10px"><label class="lenlbl">Length <select class="lensel" data-prlen="${P.id}">${lenOpts(P.weeks||12)}</select></label></div>
-        <div class="formline"><button class="btn primary" data-prstart="${P.id}">Start programme</button><button class="btn" data-predit="${P.id}">Edit programme</button><button class="btn" data-prclone="${P.id}">Clone programme</button><button class="btn danger" data-prhide="${P.id}">Remove from list</button></div>
-        <div class="hint">Start runs it as is. Edit loads it into Plan so you can change it, and keeps a copy in Saved programmes. Clone saves a copy and starts it as a new block or swaps it into your current one.</div></div></details>`;
+        <div class="formline"><button class="btn primary" data-prstart="${P.id}">Start programme</button><button class="btn" data-predit="${P.id}">Edit programme</button><button class="btn" data-prclone="${P.id}">Clone programme</button><button class="btn danger" data-prhide="${P.id}">Remove from list</button></div></div></details>`;
   }).join("");
   return `<div class="sect disp">Preset programmes</div><div class="lacc"><div class="lbody">${rows}</div></div>${hid.length?`<div class="formline" style="margin-top:8px"><button class="btn" id="prrestore">Restore ${hid.length} removed preset${hid.length>1?"s":""}</button></div>`:""}`;
 }
@@ -2891,7 +2885,7 @@ function programmeCardsHTML(){
   const b=state.block, st=blockStats(state.plan,state.logs), base=progById(b.progId);
   const list=state.programmes.length
     ? state.programmes.slice().sort((x,y)=>y.saved<x.saved?-1:1).map(pg=>`<div class="pgrow"><div class="pginfo"><div class="pgname">${esc(pg.name)}${pg.id===b.progId?' <span class="chip part">active</span>':""}</div><div class="pgmeta num">${esc(progSummary(pg.plan))} · saved ${esc(shortDate(pg.saved))}</div></div><select class="lensel" data-pglen="${pg.id}" aria-label="Length of ${esc(pg.name)}">${lenOpts(pg.weeks||12)}</select><button class="btn" data-pgedit="${pg.id}">Edit</button><button class="btn" data-pgstart="${pg.id}">Start</button><button class="btn danger" data-pgdel="${pg.id}" aria-label="Delete ${esc(pg.name)}">✕</button></div>`).join("")
-    : `<div class="hint">Nothing saved yet. Build your plan below, then “Save as programme” to reuse it later.</div>`;
+    : `<div class="hint">Nothing saved yet.</div>`;
   return `<div class="card">
     <div class="disp" style="font-size:15px">Current block</div>
     <label class="fld" style="margin-top:8px"><span class="fl">Block name</span><input id="blockname" value="${esc(b.name)}"></label>
@@ -2914,7 +2908,7 @@ function lmClass(g,c){ if(c<=0) return ""; const L=LM[g]; if(!L) return "h1"; re
 function muscleBars(planned,done,showDone){
   const P=lmTotals(planned), D=lmTotals(done);
   const keys=[...LMKEYS,"Other"].filter(k=>P[k]||D[k]);
-  if(!keys.length) return `<div class="hint">Choose exercises above and their weekly sets appear here.</div>`;
+  if(!keys.length) return `<div class="hint">No exercises chosen.</div>`;
   const max=Math.max(24,...keys.map(k=>Math.max(P[k]?P[k].n:0,D[k]?D[k].n:0))), pct=v=>(v/max*100)+"%";
   return keys.map(k=>{ const pl=P[k]?P[k].n:0, dn=D[k]?D[k].n:0, L=LM[k];
     const band=L?`<i class="mband" style="left:${pct(L[0])};width:${(L[2]-L[0])/max*100}%"></i><i class="mmrv" style="left:${pct(L[1])};width:${(L[2]-L[1])/max*100}%"></i><i class="mmav" style="left:${pct(L[0])}"></i>`:"";
@@ -2957,7 +2951,6 @@ function planHTML(){
       });
       body=`<div class="body">
         <div class="mtabs">${Array.from({length:MONTHS()},(_,i)=>i+1).map(x=>`<button data-pmonth="${s}|${x}" aria-pressed="${x===mm}">Month ${x}</button>`).join("")}</div>
-        <p class="hint" style="margin:0 0 4px">Exercises run in this order on the Train tab; leave one empty to skip it. Pick the muscle, then the exercise, then how many sets and the rep range for each set (for example 8-10, 10-12). Weight jump is what the progression model adds when you earn it. Details for every style and model are in the Library tab.</p>
         ${rows}
         ${mm===1&&MONTHS()>1?`<div class="copybtns"><button class="btn" data-copy="${s}">Copy Month 1 → ${MONTHS()>2?"Months 2 & 3":"Month 2"}</button></div>`:""}
       </div>`;
@@ -2972,14 +2965,12 @@ function planHTML(){
     <div class="segrow"><span class="seglbl disp">Month</span><div class="seg" data-vsel="m">${Array.from({length:MONTHS()},(_,i)=>i+1).map(x=>`<button aria-pressed="${x===vs.m}" data-v="${x}">${x}</button>`).join("")}</div></div>
     <div class="segrow"><span class="seglbl disp">Week</span><div class="seg" data-vsel="w">${Array.from({length:wksIn(vs.m)||1},(_,i)=>i+1).map(x=>`<button aria-pressed="${x===vs.w}" data-v="${x}">${x}</button>`).join("")}</div></div>
     <div style="margin-top:14px">${muscleBars(wm.planned,{},false)}</div>
-    <div class="hint">Planned working sets for that week across all sessions. ${LMNOTE}</div>
   </div>
   <div class="card">
     <div class="disp" style="font-size:15px">1RM Calculator</div>
     <div class="formline"><label>Load</label><input id="c-load" type="text" inputmode="decimal" style="width:80px" placeholder="kg">
       <label>× reps</label><input id="c-reps" type="text" inputmode="numeric" style="width:60px" placeholder="5">
       <span class="calcout">e1RM ≈ <b class="num" id="c-out">–</b></span></div>
-    <div class="hint">Epley estimate, same as the workbook's calculator.</div>
   </div>`;
   return out;
 }
@@ -3040,7 +3031,7 @@ function progHTML0(){
     <table class="datat"><thead><tr><th>Week</th><th style="text-align:right">Top weight (kg)</th><th style="text-align:right">Sets done</th></tr></thead><tbody>
       ${pts.map(p=>`<tr><td>M${p.m} · W${p.w}</td><td class="n num">${p.wt}</td><td class="n num">${p.sets}</td></tr>`).join("")}
     </tbody></table>`
-    :`<div class="hint">Log some weights on the Train tab and your progression charts will appear here.</div>`}
+    :`<div class="hint">No weights logged yet.</div>`}
   </div>`;
 }
 function muscleSectionHTML(){
@@ -3055,7 +3046,7 @@ function muscleSectionHTML(){
   <div class="card">
     <div class="wkchips" role="group" aria-label="Choose week">${Array.from({length:BW()},(_,i)=>`<button data-pw="${i+1}" aria-pressed="${i+1===pw}">W${i+1}</button>`).join("")}</div>
     <div style="margin-top:14px">${muscleBars(planned,done,true)}</div>
-    <div class="hint">Completed sets out of planned for week ${pw} (Month ${m}, week ${w}). Solid bar = done, outline = planned. ${LMNOTE}</div>
+    <div class="hint">Week ${pw} (Month ${m}, week ${w}): completed sets out of planned.</div>
   </div>
   ${heat?`<div class="sect disp">Sets per muscle, every week</div><div class="card">${heat}</div>`:""}`;
 }
@@ -3068,7 +3059,7 @@ function historyHTML(){
   const past=state.blocks.slice().reverse().map(bl=>`<details class="hist"><summary><b>${esc(bl.name)}</b><span class="d">${esc(shortDate(bl.start))} → ${esc(shortDate(bl.end))}</span></summary>
     <div class="histbody"><div class="num">${stats(bl.summary)}</div><div class="chips">${mus(bl.summary)}</div>
     <div class="formline"><button class="btn" data-blksave="${bl.id}">Save its plan as programme</button><button class="btn danger" data-blkdel="${bl.id}">Delete</button></div></div></details>`).join("");
-  return `<div class="sect disp">Programme history</div><div class="card">${active}${past||'<div class="hint" style="margin-top:8px">Finished blocks appear here with their dates, volume and sets per muscle. End a block from the Plan tab.</div>'}</div>`;
+  return `<div class="sect disp">Programme history</div><div class="card">${active}${past||'<div class="hint" style="margin-top:8px">No finished blocks.</div>'}</div>`;
 }
 
 /* ================= TRAINING CALENDAR + MUSCLE MAP ================= */
@@ -3122,7 +3113,7 @@ function calHTML(){
     </div>
     <div class="calwrap"><div class="calmon" style="grid-template-columns:repeat(${WEEKS},1fr)">${months}</div><div class="calgrid" style="grid-template-columns:repeat(${WEEKS},1fr)">${cells}</div></div>
     <div class="legend"><span><span class="sw"></span>rest</span><span><span class="sw cl1"></span>1–9 sets</span><span><span class="sw cl2"></span>10–19</span><span><span class="sw cl3"></span>20+</span></div>
-    <div class="hint">${total} training days in the last 6 months. Includes finished blocks.</div>
+    <div class="hint">${total} training days in the last 6 months.</div>
   </div>`;
 }
 const E=(cx,cy,rx,ry,rot)=>`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"${rot?` transform="rotate(${rot} ${cx} ${cy})"`:""}/>`;
@@ -3158,7 +3149,6 @@ function mapHTML(){
     <div class="legend"><span><span class="sw"></span>0</span><span><span class="sw ml1"></span>&lt;5</span><span><span class="sw ml2"></span>5–9</span><span><span class="sw ml3"></span>10–14</span><span><span class="sw ml4"></span>15+ sets/week</span></div>
     ${any?`<div class="mlist">${rows.map(([g,v])=>`<div class="mrow"><span>${esc(g)}</span><span class="mbar"><i style="width:${Math.round(v/mx*100)}%"></i></span><b class="num">${fmtKg(v)}</b></div>`).join("")}</div>`
       :`<div class="hint" style="margin-top:10px">No finished sets in this range. Try a longer one.</div>`}
-    <div class="hint">Average finished sets per week in the range. Calculated from your logs, including finished blocks.</div>
   </div>`;
 }
 function progHTML(){ return calHTML()+Food.progHTML()+mapHTML()+progHTML0()+muscleSectionHTML()+historyHTML(); }
@@ -3171,7 +3161,6 @@ function libHTML(){
     `<div class="formline"><input data-ladd-in="${esc(k)}" placeholder="Add ${esc(k.toLowerCase())} exercise" style="flex:1;min-width:140px"><button class="btn" data-ladd="${esc(k)}">Add</button></div>`)).join("");
   return `<div class="sect disp" style="margin-top:6px">Exercise library <span class="num">· ${total}</span></div>${ex}
   <div class="sect disp">Method reference</div>
-  <p class="hint" style="margin:0 0 8px">This app logs RPE. RIR (reps in reserve) is 10 − RPE, so RPE 8 means 2 reps left.</p>
   ${det("models","Progression models",MODELS.length,MODELS.map(([n,d,wt])=>`<div class="ref"><b>${esc(n)}</b><p>${esc(d)}</p><p><span class="tag">Watch</span> ${esc(wt)}</p></div>`).join(""))}
   ${det("styles","Set styles",STYLES.length,STYLES.map(n=>`<div class="ref"><b>${esc(n)}</b><p>${esc(STYLE_DESC[n])}</p></div>`).join(""))}
   ${det("guard","Guardrails",GUARDRAILS.length,`<ul class="guard">${GUARDRAILS.map(g=>`<li>${esc(g)}</li>`).join("")}</ul>`)}`;
@@ -3253,7 +3242,6 @@ function dataHTML(){
   ${syncCardHTML()}
   <div class="sect disp">Backup &amp; manual transfer</div>
   <div class="card">
-    <p style="font-size:14px">Your log saves automatically <b>on this device</b>. To move it to another device (Mac ↔ iPhone), export here and import there — takes about 10 seconds.</p>
     <div class="formline" style="margin-top:10px">
       <button class="btn primary" id="copydata">Copy backup code</button>
       ${canDL?`<button class="btn" id="dlfile">Download backup file</button>`:""}
@@ -3266,13 +3254,11 @@ function dataHTML(){
   </div>
   <div class="sect disp">Import macro data</div>
   <div class="card">
-    <p style="font-size:14px">Bring in a backup from the old Macro Tracker. Nothing already here is overwritten.</p>
     <textarea id="macbox" placeholder='{"v":5,…}'></textarea>
     <div class="formline"><button class="btn primary" id="macimport">Import macro data</button><label class="btn" for="macfile">From file…</label><input type="file" id="macfile" accept=".json,application/json" hidden></div>
   </div>
   <div class="sect disp">Import 1RMs</div>
   <div class="card">
-    <p style="font-size:14px">Paste one exercise per line, like <b>Squat 106</b> (kg). They go into this block's 1RMs, and sync with everything else.</p>
     <textarea id="ormbox" placeholder="Squat 106&#10;Bench Press 71"></textarea>
     <div class="formline"><button class="btn primary" id="ormimport">Import 1RMs</button></div>
   </div>
@@ -3280,9 +3266,7 @@ function dataHTML(){
   <div class="card">
     <button class="btn danger" id="reset">Erase all data on this device</button>
   </div>
-  <div class="sect disp">Install</div>
-  <div class="card"><p style="font-size:14px">Chrome or Edge: use the install icon in the address bar (or menu → Install). iPhone: Safari → Share → Add to Home Screen. It then opens full-screen and works offline.</p></div>
-  <p class="hint">Program template © Aquilina Strength Training — this tracker is for your personal use. Built from “Big Picture Programming – 5 Day (kg)”.</p>`;
+`;
 }
 
 /* ================= rest timer ================= */
