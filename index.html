@@ -433,6 +433,15 @@ dialog::backdrop{background:rgba(10,10,14,.5)}
 .fd-lbl{display:block; font-size:12px; color:var(--muted)} .fd-lbl input{display:block; margin-top:5px}
 .fd-tiles2{display:grid; grid-template-columns:1fr 1fr; gap:8px}
 .fd-stat{background:var(--card2); border-radius:12px; padding:12px} .fd-stat b{display:block; font-size:22px; font-weight:800} .fd-stat span{font-size:12px; color:var(--muted)}
+.fd-link{color:var(--accent); font-weight:700; padding:0; text-decoration:underline}
+.fd-warn{list-style:none; margin:0; padding:0} .fd-warn li{padding:8px 0 8px 12px; border-left:3px solid var(--muted); margin-top:8px; font-size:14px} .fd-warn li.bad{border-left-color:var(--prim,#C2412D)} .fd-warn li.warn{border-left-color:#E07A3F}
+.fd-plan{display:flex; gap:12px; align-items:flex-start; padding:14px 0; border-top:1px solid var(--line)} .fd-plan:first-of-type{border-top:0}
+.fd-wk{width:54px; flex:none} .fd-wk b{font-size:15px}
+.fd-badge{font-size:11px; font-weight:700; border:1px solid var(--line); color:var(--muted); border-radius:99px; padding:2px 8px} .fd-badge.now{color:var(--accent); border-color:var(--accent)}
+.fd-phr{display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-top:1px solid var(--line)} .fd-phr:first-of-type{border-top:0}
+.fd-chart{display:block; width:100%; height:auto}
+.fd-brief{cursor:pointer; width:100%; text-align:left; padding-top:0; color:inherit}
+.fd-sub{overflow-x:auto} .fd-sub button{white-space:nowrap; padding:10px 12px; flex:1 0 auto}
 .fd-t{width:100%; border-collapse:collapse; font-size:14px} .fd-t th{font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); text-align:right; padding:6px 4px; white-space:nowrap} .fd-t td{text-align:right; padding:9px 4px; border-top:1px solid var(--line); font-variant-numeric:tabular-nums} .fd-t th:first-child,.fd-t td:first-child{text-align:left; font-weight:600}
 </style>
 </head>
@@ -1617,7 +1626,7 @@ function importLegacy(txt){
 }
 
 /* ---------- UI state (not saved) ---------- */
-const U={sub:"today",date:null,panel:null,draft:[],building:false,addingFood:false,pickId:null,pickUnit:"g",pickQty:""};
+const U={planPhase:"aggressive",planStart:null,sub:"today",date:null,panel:null,draft:[],building:false,addingFood:false,pickId:null,pickUnit:"g",pickQty:""};
 const today=()=>todayISO();
 U.date=today();
 
@@ -1631,6 +1640,15 @@ const items=d=>(F().days[d]&&F().days[d].items)||[];
 function setItems(d,list){ const r=F().days[d]||(F().days[d]={items:[],type:""}); r.items=list; }
 function latestWeight(){ const ws=sortBy(F().weights,"d"); return ws.length?ws[ws.length-1].lb:null; }
 
+/* Training or rest day, worked out from your workout log unless you set it by hand */
+function autoType(d){
+  const wd=workoutDays();
+  if(wd[d]) return {type:"train",why:"workout logged"};
+  if(Object.keys(wd).length<4) return {type:"train",why:"default until you have some workouts logged"};
+  if(d<today()) return {type:"rest",why:"no workout logged"};
+  let n=0; for(let i=1;i<=8;i++) if(wd[addDays(d,-7*i)]) n++;
+  return n>=4?{type:"train",why:"you usually train on this day"}:{type:"rest",why:"you don't usually train on this day"};
+}
 /* ---------- phase logic ---------- */
 const lenDays=b=>PHASES[b.phase].unit==="days"?b.len:b.len*7;
 const endOf=b=>addDays(b.start,lenDays(b));
@@ -1644,8 +1662,9 @@ function calcTargets(key,dt,w,p){
 function blockFor(d){ for(const b of sortBy(F().plan,"start")) if(d>=b.start&&d<endOf(b)) return b; return null; }
 function targetsFor(d){
   const f=F(), block=blockFor(d), key=block?block.phase:(f.profile?f.profile.fallback:"maintenance");
-  const rec=f.days[d], dt=PHASES[key].restOnly?"rest":((rec&&rec.type)||"train"), w=latestWeight();
-  const out={key,block,dayType:dt,ready:false};
+  const rec=f.days[d], w=latestWeight(); let dt, auto=null;
+  if(PHASES[key].restOnly) dt="rest"; else if(rec&&rec.type) dt=rec.type; else { auto=autoType(d); dt=auto.type; }
+  const out={key,block,dayType:dt,auto,ready:false};
   if(f.profile&&w!=null){ out.ready=true; out.weight=w; Object.assign(out,calcTargets(key,dt,w,f.profile)); }
   return out;
 }
@@ -1673,7 +1692,7 @@ function pickControls(act,label){
     '<div class="full"><button class="btn primary wide" data-fa="'+act+'">'+label+'</button></div></div>';
 }
 function subnav(){
-  const t=[["today","Today"],["meals","Meals"],["foods","Foods"],["targets","Targets"]];
+  const t=[["today","Today"],["meals","Meals"],["plan","Plan"],["dash","Dash"],["foods","Foods"],["targets","Targets"]];
   return '<div class="fd-seg fd-sub" role="tablist">'+t.map(x=>'<button data-fa="sub" data-s="'+x[0]+'" aria-pressed="'+(U.sub===x[0])+'">'+x[1]+'</button>').join("")+'</div>';
 }
 
@@ -1685,7 +1704,10 @@ function vToday(){
   h+='<section class="card fd-hero"><div class="hint">Week '+isoWeek(d)+' · w/c '+fmtShort(mondayOf(d))+' · '+esc(pos)+'</div>'+
      '<div class="fd-big num">'+(t.ready?t.kcal.toLocaleString():"—")+'<small>kcal target</small></div>'+pill(t.key);
   if(pd.restOnly) h+='<div class="fd-note">Rest days only in a Nuclear Cut.</div>';
-  else h+='<div class="fd-seg" role="group" aria-label="Day type"><button data-fa="dayType" data-type="train" aria-pressed="'+(t.dayType==="train")+'">Training day</button><button data-fa="dayType" data-type="rest" aria-pressed="'+(t.dayType==="rest")+'">Rest day</button></div>';
+  else{
+    h+='<div class="fd-seg" role="group" aria-label="Day type"><button data-fa="dayType" data-type="train" aria-pressed="'+(t.dayType==="train")+'">Training day</button><button data-fa="dayType" data-type="rest" aria-pressed="'+(t.dayType==="rest")+'">Rest day</button></div>';
+    h+='<div class="hint" style="margin-top:6px">'+(t.auto?'Set automatically: '+esc(t.auto.why):'Set by you. <button class="fd-link" data-fa="dayAuto">Use automatic</button>')+'</div>';
+  }
   if(t.ready) h+='<div class="fd-tiles"><div class="fd-tile"><b class="num">'+t.protein+'<small>g</small></b><span>Protein</span><em>'+t.pc.p+'%</em></div><div class="fd-tile"><b class="num">'+t.fat+'<small>g</small></b><span>Fat</span><em>'+t.pc.f+'%</em></div><div class="fd-tile"><b class="num">'+t.carbs+'<small>g</small></b><span>Carbs</span><em>'+t.pc.c+'%</em></div></div>';
   else h+='<div class="fd-note">Set your details in <b>Targets</b> and log a weigh-in to see daily goals.</div>';
   h+='<div class="fd-note">'+esc(pd.rule)+'</div></section>';
@@ -1774,7 +1796,83 @@ function vTargets(){
   return h;
 }
 
-function html(){ return '<div class="food">'+subnav()+({today:vToday,meals:vMeals,foods:vFoods,targets:vTargets}[U.sub]||vToday)()+'</div>'; }
+/* ---------- Plan ---------- */
+function planWarnings(){
+  const out=[], plan=sortBy(F().plan,"start");
+  plan.forEach((b,i)=>{
+    const pd=PHASES[b.phase];
+    if(pd.max!=null&&b.len>pd.max) out.push({cls:"bad",text:pd.label+" from "+fmtShort(b.start)+" is "+b.len+" "+pd.unit+". The limit is "+pd.max+"."});
+    else if(pd.warnAt&&b.len>=pd.warnAt) out.push({cls:"warn",text:pd.label+" from "+fmtShort(b.start)+(b.len===pd.max?" is at its limit":" is close to its limit")+" ("+b.len+" of "+pd.max+" weeks)."});
+    for(let j=i+1;j<plan.length;j++){ const o=plan[j];
+      if(b.start<endOf(o)&&o.start<endOf(b)) out.push({cls:"bad",text:pd.label+" overlaps "+PHASES[o.phase].label+" from "+fmtShort(o.start)+"."});
+      if(b.phase==="nuclear"&&o.phase==="nuclear"&&Math.abs(dayDiff(b.start,o.start))<30) out.push({cls:"bad",text:"Two Nuclear Cut blocks start less than 30 days apart. The rule is once a month."}); }
+    if(b.phase==="lean"&&i>0&&plan[i-1].phase==="aggressive"&&endOf(plan[i-1])<=b.start) out.push({cls:"warn",text:"Lean Bulk from "+fmtShort(b.start)+" follows Aggressive Cut with no maintenance between. Add a maintenance block first."});
+  });
+  return out;
+}
+function vPlan(){
+  const t0=today(), plan=sortBy(F().plan,"start"), warns=planWarnings(), sel=PHASES[U.planPhase], w=latestWeight(), p=F().profile, ready=!!(p&&w!=null);
+  let h='<section class="card"><div class="sect disp" style="margin-top:0">Plan a phase</div><div class="fd-form"><label class="full">Phase<select id="fd-pphase" data-fc="planPhase">'+phaseOptions(U.planPhase)+'</select></label>'+
+    '<label>Start date<input id="fd-pstart" type="date" value="'+(U.planStart||t0)+'"></label>'+
+    '<label>'+(sel.unit==="days"?"Days (max "+sel.max+")":"Weeks"+(sel.max!=null?" (max "+sel.max+")":""))+'<input id="fd-plen" type="number" inputmode="numeric" min="1" step="1" value="'+DEFAULT_LEN[U.planPhase]+'"></label>'+
+    '<div class="full"><button class="btn primary wide" data-fa="addBlock">Add to plan</button></div></div><p class="hint" style="margin-top:10px">'+esc(sel.rule)+'</p></section>';
+  if(warns.length) h+='<section class="card"><div class="sect disp" style="margin-top:0">Check these</div><ul class="fd-warn">'+warns.map(x=>'<li class="'+x.cls+'">'+esc(x.text)+'</li>').join("")+'</ul></section>';
+  h+='<section class="card"><div class="sect disp" style="margin-top:0">Timeline</div>';
+  if(!plan.length) h+='<p class="hint" style="margin:0">No phases planned yet. Add one above, for example a 6-week Aggressive Cut.</p>';
+  plan.forEach((b,i)=>{
+    const pd=PHASES[b.phase], end=addDays(endOf(b),-1), status=t0<b.start?"Planned":(t0<endOf(b)?"Now":"Done"), limit=pd.max!=null?b.len+" of "+pd.max+" "+pd.unit:b.len+" "+pd.unit;
+    const kc=ready?(pd.restOnly?["rest"]:["train","rest"]).map(dt=>{ const c=calcTargets(b.phase,dt,w,p); return '<div class="hint num">'+(dt==="train"?"Training":"Rest")+' · '+c.kcal.toLocaleString()+' kcal · P '+c.protein+' · C '+c.carbs+' · F '+c.fat+'</div>'; }).join(""):'<div class="hint">Set your details and log a weight to see macros.</div>';
+    h+='<div class="fd-plan"><div class="fd-wk"><div class="hint">Wk '+(i+1)+'</div><b>'+fmtShort(b.start)+'</b></div><div style="flex:1;min-width:0"><div class="fd-name"><span class="fd-dot" style="background:'+PHASE_COL[b.phase]+'"></span> '+pd.label+' <span class="fd-badge'+(status==="Now"?" now":"")+'">'+status+'</span></div><div class="hint num" style="margin-top:2px">'+fmtShort(b.start)+' to '+fmtShort(end)+' · '+limit+'</div>'+kc+'<div style="margin-top:6px"><button class="btn danger" data-fa="delBlock" data-id="'+b.id+'">Remove</button></div></div></div>';
+  });
+  return h+'</section>';
+}
+
+/* ---------- Dash ---------- */
+function chartSvg(ws){
+  const pts=ws.slice(-60); if(pts.length<2) return '<p class="hint">Log two or more weigh-ins to see the trend.</p>';
+  const W=320,H=190,PL=36,PR=10,PT=12,PB=26, vals=pts.map(p=>p.lb);
+  let lo=Math.floor(Math.min(...vals))-1, hi=Math.ceil(Math.max(...vals))+1; if(hi-lo<2) hi=lo+2; const mid=(lo+hi)/2;
+  const y=v=>PT+(hi-v)/(hi-lo)*(H-PT-PB), x=i=>PL+i*(W-PL-PR)/(pts.length-1);
+  const grid=[hi,mid,lo].map(v=>'<line x1="'+PL+'" x2="'+(W-PR)+'" y1="'+y(v).toFixed(1)+'" y2="'+y(v).toFixed(1)+'" stroke="var(--line)" stroke-width="1"/><text x="'+(PL-6)+'" y="'+(y(v)+4).toFixed(1)+'" text-anchor="end" font-size="11" fill="var(--muted)">'+r0(v)+'</text>').join("");
+  const d=pts.map((p,i)=>(i?"L":"M")+x(i).toFixed(1)+" "+y(p.lb).toFixed(1)).join(" ");
+  const dots=pts.map((p,i)=>'<circle cx="'+x(i).toFixed(1)+'" cy="'+y(p.lb).toFixed(1)+'" r="'+(i===pts.length-1?4.5:3)+'" fill="var(--accent)"/>').join("");
+  const last=pts[pts.length-1];
+  return '<svg class="fd-chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Weight over time">'+grid+'<path d="'+d+'" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>'+dots+
+    '<text x="'+PL+'" y="'+(H-6)+'" font-size="11" fill="var(--muted)">'+fmtShort(pts[0].d)+'</text><text x="'+(W-PR)+'" y="'+(H-6)+'" font-size="11" fill="var(--muted)" text-anchor="end">'+fmtShort(last.d)+' · '+f1(last.lb)+' lb</text></svg>';
+}
+function foodWeek(){
+  const t0=today(), days=[]; for(let i=0;i<7;i++){ const d=addDays(t0,-i); if(items(d).length) days.push(d); }
+  let k=0,pr=0; days.forEach(d=>{ const t=sumEntries(items(d)); k+=t.k; pr+=t.p; });
+  return {n:days.length,k:days.length?k/days.length:0,p:days.length?pr/days.length:0};
+}
+function vDash(){
+  const f=F(), ws=sortBy(f.weights,"d"), first=ws.length?ws[0].lb:null, latest=ws.length?ws[ws.length-1].lb:null, change=first!=null?latest-first:null, t0=today();
+  const weeks={}; ws.forEach(w=>{ weeks[mondayOf(w.d)]=true; });
+  let nuclear=0, planned=0; const per={}; PHASE_ORDER.forEach(k=>per[k]=0);
+  f.plan.forEach(b=>{ per[b.phase]+=b.len; if(b.phase==="nuclear"){ if(dayDiff(t0,endOf(b))>-365) nuclear+=b.len; } else planned+=b.len; });
+  let h='<section class="card"><div class="fd-head"><div class="sect disp" style="margin:0">Weight</div><span class="hint">'+(ws.length?ws.length+" weigh-ins":"")+'</span></div>'+chartSvg(ws)+'</section>';
+  const fw=foodWeek();
+  h+='<section class="card"><div class="sect disp" style="margin-top:0">Food · last 7 days</div>'+(fw.n?'<div class="fd-tiles2"><div class="fd-stat"><b class="num">'+r0(fw.k).toLocaleString()+'<small> kcal</small></b><span>Average per logged day</span></div><div class="fd-stat"><b class="num">'+r0(fw.p)+'<small> g</small></b><span>Protein per logged day</span></div></div><p class="hint" style="margin-top:8px">'+fw.n+' of the last 7 days logged.</p>':'<p class="hint" style="margin:0">No food logged in the last 7 days yet. Track meals on the Today tab.</p>')+'</section>';
+  const st=(v,l)=>'<div class="fd-stat"><b class="num">'+v+'</b><span>'+l+'</span></div>';
+  h+='<section class="card"><div class="sect disp" style="margin-top:0">Year at a glance</div><div class="fd-tiles2">'+st(first==null?"—":f1(first),"Start weight (lb)")+st(latest==null?"—":f1(latest),"Latest weight (lb)")+st(change==null?"—":(change>0?"+":"")+f1(change),"Total change (lb)")+st(Object.keys(weeks).length,"Weeks tracked")+st(nuclear+'<small> / ~24/yr</small>',"Nuclear days used")+st(planned,"Weeks planned")+'</div></section>';
+  h+='<section class="card"><div class="sect disp" style="margin-top:0">Weeks per phase</div>'+PHASE_ORDER.map(k=>{ const pd=PHASES[k]; return '<div class="fd-phr"><div><span class="fd-dot" style="background:'+PHASE_COL[k]+'"></span> '+pd.label+'</div><div class="hint num"><b style="color:var(--ink)">'+per[k]+'</b> '+(pd.unit==="days"?"d":"wk")+(pd.max!=null?' (max '+pd.max+')':"")+'</div></div>'; }).join("")+'</section>';
+  return h;
+}
+/* Progress tab and Train header use these */
+function progHTML(){
+  const f=F(), ws=sortBy(f.weights,"d"), fw=foodWeek(), t=targetsFor(today()), lw=ws.length?ws[ws.length-1]:null;
+  const ago=lw?ws.filter(w=>dayDiff(w.d,lw.d)>=21).pop():null, ch=(lw&&ago)?lw.lb-ago.lb:null;
+  let h='<div class="sect disp">Bodyweight and food</div><div class="card food">';
+  h+='<div class="fd-tiles2"><div class="fd-stat"><b class="num">'+(lw?f1(lw.lb)+'<small> lb</small>':"—")+'</b><span>Latest weigh-in'+(ch!=null?" · "+(ch>0?"+":"")+f1(ch)+" lb over 3 weeks":"")+'</span></div><div class="fd-stat"><b class="num">'+(fw.n?r0(fw.k).toLocaleString()+'<small> kcal</small>':"—")+'</b><span>'+(fw.n?"Average over "+fw.n+" logged day"+(fw.n>1?"s":"")+(t.ready?" · target "+t.kcal.toLocaleString():""):"No food logged in 7 days")+'</span></div></div>';
+  h+='<div style="margin-top:10px">'+chartSvg(ws)+'</div></div>';
+  return h;
+}
+function brief(){
+  const f=F(), d=today(), t=targetsFor(d), tot=sumEntries(items(d)), pd=PHASES[t.key];
+  const right=t.ready?(t.kcal-tot.k>=0?r0(t.kcal-tot.k).toLocaleString()+" kcal left":r0(tot.k-t.kcal).toLocaleString()+" kcal over")+" · "+r0(tot.p)+"/"+t.protein+" g protein":"set up in Food";
+  return '<button class="progline fd-brief" data-fa="goFood" aria-label="Open Food"><span class="k disp">Nutrition</span><b>'+esc(pd.label)+'</b><span class="from">'+esc(right)+'</span></button>';
+}
+function html(){ return '<div class="food">'+subnav()+({today:vToday,meals:vMeals,plan:vPlan,dash:vDash,foods:vFoods,targets:vTargets}[U.sub]||vToday)()+'</div>'; }
 
 /* ---------- actions ---------- */
 function commit(){ save(); render(); }
@@ -1790,6 +1888,8 @@ const A={
   shiftDay:d=>{ U.date=addDays(U.date,num(d.n,0)); U.panel=null; render(); },
   panel:d=>{ U.panel=U.panel===d.name?null:d.name; render(); },
   setUnit:d=>{ const el=$("#fd-pqty"); U.pickQty=el?el.value:U.pickQty; U.pickUnit=d.u==="unit"?"unit":"g"; render(); },
+  dayAuto:()=>{ const r=F().days[U.date]; if(r){ r.type=""; commit(); } },
+  goFood:()=>{ state.tab="food"; U.sub="today"; U.date=today(); save(); render(); window.scrollTo(0,0); },
   dayType:d=>{ if(PHASES[targetsFor(U.date).key].restOnly) return; const r=F().days[U.date]||(F().days[U.date]={items:[],type:""}); r.type=d.type==="rest"?"rest":"train"; commit(); },
   addFood:()=>{ const e=pickEntry(); if(!e) return; setItems(U.date,items(U.date).concat([e])); U.panel=null; U.pickQty=""; commit(); toast("Added "+e.n); },
   draftAdd:()=>{ const e=pickEntry(); if(!e) return; U.draft.push(e); U.pickQty=""; render(); },
@@ -1799,6 +1899,12 @@ const A={
   delEntry:d=>{ const l=items(U.date).slice(); l.splice(num(d.idx),1); setItems(U.date,l); commit(); },
   addWeight:()=>{ const day=$("#fd-wdate").value, lb=num($("#fd-wlb").value,0); if(!day||lb<=0) return toast("Enter a date and a weight in pounds."); F().weights.push({id:fid(),d:day,lb:Math.round(lb*10)/10}); commit(); toast("Weigh-in saved"); },
   delWeight:d=>{ const f=F(); f.weights=f.weights.filter(w=>w.id!==d.id); if(!f.delw.includes(d.id)) f.delw.push(d.id); commit(); },
+  addBlock:()=>{
+    const phase=$("#fd-pphase").value, start=$("#fd-pstart").value, len=Math.round(num($("#fd-plen").value,0));
+    if(!PHASES[phase]) return toast("Pick a phase."); if(!start) return toast("Pick a start date."); if(len<1) return toast("Enter a length of at least 1.");
+    const pd=PHASES[phase]; if(pd.max!=null&&len>pd.max) return toast(pd.label+" is limited to "+pd.max+" "+pd.unit+".");
+    F().plan.push({id:fid(),phase,start,len}); U.planStart=null; commit(); toast(planWarnings().length?"Added. Check the warnings on this tab.":"Added to plan."); },
+  delBlock:d=>{ F().plan=F().plan.filter(b=>b.id!==d.id); commit(); },
   newMeal:()=>{ U.building=true; U.draft=[]; U.pickQty=""; render(); },
   cancelMeal:()=>{ U.building=false; U.draft=[]; render(); },
   saveMeal:()=>{ const name=$("#fd-mname").value.trim(); if(!name) return toast("Give the meal a name."); if(!U.draft.length) return toast("Add at least one ingredient."); F().meals.push({id:fid(),name,items:U.draft.slice()}); U.draft=[]; U.building=false; commit(); toast("Meal saved"); },
@@ -1816,12 +1922,13 @@ const A={
     F().profile={sex:$("#fd-sex").value==="m"?"m":"f",age,heightFt:Math.round(ft),heightIn:Math.round(inch),activity:num($("#fd-act").value,1.375),fallback:PHASES[$("#fd-fb").value]?$("#fd-fb").value:"maintenance"}; commit(); toast("Saved"); }
 };
 const C={
+  planPhase:el=>{ U.planPhase=el.value; render(); },
   pickFood:el=>{ U.pickId=el.value; const f=foodById(el.value); U.pickUnit=(f&&f.unit)?"unit":"g"; U.pickQty=""; render(); },
   pickQty:el=>{ U.pickQty=el.value; }
 };
 function act(name,ds){ const fn=A[name]; if(fn){ fn(ds); return true; } return false; }
 function chg(name,el){ const fn=C[name]; if(fn) fn(el); }
-return {html,fix,merge,has,cfg,importLegacy,blank,act,chg,targetsFor,latestWeight,sumEntries,items,PHASES,PHASE_COL};
+return {html,fix,merge,has,cfg,importLegacy,blank,act,chg,targetsFor,latestWeight,sumEntries,items,progHTML,brief,PHASES,PHASE_COL};
 })();
 
 const KEY="bpp5.v1";
@@ -2584,7 +2691,7 @@ function trainHTML(){
   const _b=state.block, _base=progById(_b.progId), _pn=_b.name||"My block";
   const progline=`<div class="progline"><span class="k disp">Programme</span><b>${esc(_pn)}</b>${_base&&_base.name!==_pn?`<span class="from">from ${esc(_base.name)}</span>`:""}</div>`;
   return `
-  ${progline}
+  ${progline}${Food.brief()}
   <div class="selbar">
     <div class="segrow"><span class="seglbl disp">Month</span><div class="seg" data-pick="m">${Array.from({length:MONTHS()},(_,i)=>i+1).map(x=>`<button aria-pressed="${x===m}" data-v="${x}">${x}</button>`).join("")}</div></div>
     <div class="segrow"><span class="seglbl disp">Week</span><div class="seg" data-pick="w">${Array.from({length:wksIn(m)||1},(_,i)=>i+1).map(x=>`<button aria-pressed="${x===w}" data-v="${x}">${x}</button>`).join("")}</div></div>
@@ -3054,7 +3161,7 @@ function mapHTML(){
     <div class="hint">Average finished sets per week in the range. Calculated from your logs, including finished blocks.</div>
   </div>`;
 }
-function progHTML(){ return calHTML()+mapHTML()+progHTML0()+muscleSectionHTML()+historyHTML(); }
+function progHTML(){ return calHTML()+Food.progHTML()+mapHTML()+progHTML0()+muscleSectionHTML()+historyHTML(); }
 function libHTML(){
   const open=state.libOpen||{};
   const det=(key,title,count,body)=>`<details class="lacc" data-lk="${esc(key)}"${open[key]?" open":""}><summary><span>${title}</span><span class="count num">${count}</span></summary><div class="lbody">${body}</div></details>`;
